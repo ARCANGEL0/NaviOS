@@ -42,38 +42,38 @@
 }
 
 /* DARK MODE hard overrides */
-.neko-darkmode .nekoLogo {
+.navi_darkmode .navi_logo {
   filter: hue-rotate(180deg) saturate(3) contrast(1.05) brightness(1.05)
     drop-shadow(0 0 14px rgba(255, 52, 90, 0.45));
 }
-.neko-darkmode .panelbox {
+.navi_darkmode .panelbox {
   --arwes-frames-bg-color: rgba(46, 7, 12, 0.72);
   --arwes-frames-line-color: rgba(255, 78, 110, 0.7);
   --arwes-frames-bg-filter: drop-shadow(0 0 8px rgba(255, 64, 96, 0.18));
   --arwes-frames-line-filter: drop-shadow(0 0 9px rgba(255, 74, 108, 0.3));
 }
-.neko-darkmode .headbox {
+.navi_darkmode .headbox {
   background: linear-gradient(90deg, rgba(18, 3, 8, 0.92) 0%, rgba(28, 5, 12, 0.88) 45%, rgba(12, 2, 6, 0.88) 100%);
 }
-.neko-darkmode .headbox::after {
+.navi_darkmode .headbox::after {
   background: linear-gradient(90deg, transparent, rgba(255, 84, 116, 0.7), transparent);
 }
-.neko-darkmode .octrig {
+.navi_darkmode .octrig {
   color: rgba(255, 166, 186, 0.95);
   --arwes-frames-bg-color: rgba(44, 6, 12, 0.52);
   --arwes-frames-line-color: rgba(255, 86, 118, 0.82);
   --arwes-frames-bg-filter: drop-shadow(0 0 8px rgba(255, 62, 96, 0.2));
   --arwes-frames-line-filter: drop-shadow(0 0 10px rgba(255, 78, 110, 0.38));
 }
-.neko-darkmode .octrig::before {
+.navi_darkmode .octrig::before {
   background: linear-gradient(145deg, rgba(60, 8, 16, 0.26) 0%, rgba(38, 6, 12, 0.55) 100%);
 }
-.neko-darkmode .octrig:hover {
+.navi_darkmode .octrig:hover {
   color: #ffe3e8;
   --arwes-frames-bg-color: rgba(56, 8, 16, 0.62);
   --arwes-frames-line-color: rgba(255, 130, 156, 0.98);
 }
-.neko-darkmode .neko-btn {
+.navi_darkmode .navi_btn {
   --arwes-frames-bg-color: rgba(44, 6, 12, 0.58);
   --arwes-frames-line-color: rgba(255, 88, 120, 0.78);
   --arwes-frames-bg-filter: drop-shadow(0 0 7px rgba(255, 60, 92, 0.14));
@@ -82,19 +82,19 @@
   background: linear-gradient(145deg, rgba(42, 6, 12, 0.88) 0%, rgba(20, 4, 8, 0.94) 100%);
   color: #ffd6de;
 }
-.neko-darkmode .neko-btn:hover {
+.navi_darkmode .navi_btn:hover {
   border-color: rgba(255, 126, 152, 0.92);
 }
-.neko-darkmode .neko-btn-cyan-glow:hover {
+.navi_darkmode .navi_btn_cyan_glow:hover {
   animation: btn-hover-glow-red 1.1s ease-in-out infinite;
 }
-.neko-darkmode .neko-btn-cyan-glow:hover .neko-btn-content {
+.navi_darkmode .navi_btn_cyan_glow:hover .navi_btn_content {
   text-shadow: 0 0 11px rgba(255, 82, 114, 0.7);
 }
-.neko-darkmode .newChat-btn:hover .neko-btn-content {
+.navi_darkmode .newChat-btn:hover .navi_btn_content {
   text-shadow: 0 0 10px rgba(255, 86, 118, 0.6);
 }
-.neko-darkmode .sidebar-btn {
+.navi_darkmode .sidebar-btn {
   --arwes-frames-bg-color: rgba(52, 8, 14, 0.66);
   --arwes-frames-line-color: rgba(255, 108, 134, 0.92);
   --arwes-frames-bg-filter: drop-shadow(0 0 8px rgba(255, 70, 104, 0.2));
@@ -103,12 +103,12 @@
   background: linear-gradient(145deg, rgba(58, 9, 18, 0.84) 0%, rgba(30, 6, 12, 0.92) 100%);
   color: rgba(255, 230, 236, 0.95);
 }
-.neko-darkmode .sidebar-btn:hover {
+.navi_darkmode .sidebar-btn:hover {
   --arwes-frames-line-color: rgba(255, 150, 170, 1);
   border-color: rgba(255, 150, 170, 0.98);
   color: #fff2f5;
 }
-.neko-darkmode .chat-btn {
+.navi_darkmode .chat-btn {
   --arwes-frames-bg-color: rgba(58, 10, 18, 0.7);
   --arwes-frames-line-color: rgba(255, 120, 148, 0.95);
   --arwes-frames-bg-filter: drop-shadow(0 0 10px rgba(255, 70, 104, 0.26));
@@ -120,10 +120,10 @@
     0 0 18px rgba(255, 84, 116, 0.28),
     0 0 34px rgba(255, 72, 104, 0.18);
 }
-.neko-darkmode .chat-btn svg {
+.navi_darkmode .chat-btn svg {
   filter: drop-shadow(0 0 6px rgba(255, 118, 146, 0.5));
 }
-.neko-darkmode .chat-btn-attach:hover {
+.navi_darkmode .chat-btn-attach:hover {
   --arwes-frames-line-color: rgba(255, 120, 148, 0.98);
   --arwes-frames-line-filter: drop-shadow(0 0 12px rgba(255, 90, 122, 0.5));
   border-color: rgba(255, 120, 148, 0.98);
@@ -133,31 +133,31 @@
     0 0 20px rgba(255, 90, 122, 0.34),
     0 0 34px rgba(255, 78, 110, 0.22);
 }
-.neko-darkmode .fieldneko {
+.navi_darkmode .navi_field {
   --arwes-frames-bg-color: rgba(32, 6, 10, 0.7);
   --arwes-frames-line-color: rgba(255, 88, 118, 0.6);
   --arwes-frames-bg-filter: drop-shadow(0 0 5px rgba(255, 70, 104, 0.12));
   --arwes-frames-line-filter: drop-shadow(0 0 7px rgba(255, 80, 112, 0.2));
 }
-.neko-darkmode .nekoinput {
+.navi_darkmode .navi_input {
   color: #ffd8df;
   border-color: rgba(255, 84, 116, 0.35);
   background: linear-gradient(140deg, rgba(18, 4, 8, 0.95) 0%, rgba(24, 6, 12, 0.88) 100%);
 }
-.neko-darkmode .nekoinput:focus {
+.navi_darkmode .navi_input:focus {
   border-color: rgba(255, 118, 146, 0.85);
   box-shadow: 0 0 0 1px rgba(255, 92, 124, 0.5), 0 0 16px rgba(255, 72, 104, 0.25);
 }
-.neko-darkmode .txt-glow-area {
+.navi_darkmode .txt-glow-area {
   animation: edit-input-pulse-red 1.2s ease-in-out infinite;
 }
-.neko-darkmode .hotframe {
+.navi_darkmode .hotframe {
   filter: drop-shadow(0 0 10px rgba(255, 80, 112, 0.34));
 }
-.neko-darkmode .hotbtn {
+.navi_darkmode .hotbtn {
   animation: hot-glitch-red 1.7s steps(2, end) infinite;
 }
-.neko-darkmode .hotbtn::after {
+.navi_darkmode .hotbtn::after {
   background: linear-gradient(
     180deg,
     rgba(255, 96, 128, 0) 0%,
@@ -165,30 +165,30 @@
     rgba(255, 96, 128, 0) 100%
   );
 }
-.neko-darkmode .hotdot {
+.navi_darkmode .hotdot {
   background: rgba(255, 120, 148, 0.98);
   box-shadow:
     0 0 9px rgba(255, 106, 136, 0.85),
     0 0 18px rgba(255, 86, 118, 0.55);
 }
-.neko-darkmode .hotdot::before {
+.navi_darkmode .hotdot::before {
   border-color: rgba(255, 140, 164, 0.9);
   animation: hot-pulse-red 1.2s ease-out infinite;
 }
-.neko-darkmode .text-decipher {
+.navi_darkmode .text-decipher {
   text-shadow: 0 0 10px rgba(255, 78, 110, 0.45);
 }
-.neko-darkmode .neon-glow {
+.navi_darkmode .neon-glow {
   box-shadow: 0 0 5px rgba(255, 74, 108, 0.38), 0 0 16px rgba(255, 62, 96, 0.28);
 }
-.neko-darkmode .neon-text {
+.navi_darkmode .neon-text {
   text-shadow: 0 0 10px rgba(255, 80, 112, 0.5);
 }
-.neko-darkmode .neon-border {
+.navi_darkmode .neon-border {
   border: 1px solid rgba(255, 92, 124, 0.55);
   box-shadow: inset 0 0 10px rgba(255, 80, 112, 0.18), 0 0 14px rgba(255, 70, 104, 0.16);
 }
-.neko-darkmode .loadingtxt {
+.navi_darkmode .loadingtxt {
   animation: pending-loading-pulse-red 1.3s ease-in-out infinite;
 }
 
@@ -280,38 +280,38 @@
     text-shadow: 0 0 14px rgba(255, 96, 128, 0.55);
   }
 }
-.neko-darkmode .chat-bubble {
+.navi_darkmode .chat-bubble {
   border-color: rgba(255, 98, 130, 0.6);
   /*
   box-shadow: 0 0 16px rgba(255, 70, 104, 0.18); 
   */
 }
-.neko-darkmode .chat-bubble-user {
+.navi_darkmode .chat-bubble-user {
   border-color: rgba(255, 120, 148, 0.72);
 /*  box-shadow: 0 0 18px rgba(255, 92, 124, 0.22); */ 
 }
-.neko-darkmode .chat-bubble-assistant {
+.navi_darkmode .chat-bubble-assistant {
   border-color: rgba(255, 92, 124, 0.55);
 }
-.neko-darkmode .chat-bubble-error {
+.navi_darkmode .chat-bubble-error {
   border-color: rgba(255, 198, 96, 0.92);
   text-shadow: 0 0 10px rgba(255, 190, 90, 0.55);
 }
-.neko-darkmode .chat-bubble-error .chat-bubble-text,
-.neko-darkmode .chat-bubble-error .assistant-md-root {
+.navi_darkmode .chat-bubble-error .chat-bubble-text,
+.navi_darkmode .chat-bubble-error .assistant-md-root {
   color: #ffe6b8;
 }
-.neko-darkmode .chat-action-btn {
+.navi_darkmode .chat-action-btn {
   color: rgba(255, 214, 126, 0.96);
   text-shadow: 0 0 8px rgba(255, 186, 90, 0.5);
 }
-.neko-darkmode .chat-action-btn:hover {
+.navi_darkmode .chat-action-btn:hover {
   color: #fff0cc;
 }
-.neko-darkmode .chat-action-nav {
+.navi_darkmode .chat-action-nav {
   color: rgba(255, 210, 120, 0.95);
 }
-.neko-darkmode .chat-action-counter {
+.navi_darkmode .chat-action-counter {
   color: rgba(255, 224, 150, 0.98);
   text-shadow: 0 0 8px rgba(255, 196, 96, 0.45);
 }
@@ -410,10 +410,9 @@
   .border { 
     border: 0 !important;
   }
- .nekocli { 
-    font-size: 0.56rem;
+.navi_cli {    font-size: 0.56rem;
   }
-  .nekocli:hover {
+  .navi_cli:hover {
     color: var(--primary-active)
   }
   
@@ -3102,7 +3101,7 @@
   --background: #01050c;
   --foreground: #96f8ff;
 }
-:root.neko-darkmode {
+:root.navi_darkmode {
   --color-cyan-50: #ffe9ef;
   --color-cyan-100: #ffd4df;
   --color-cyan-200: #ffb7c6;
@@ -3162,7 +3161,7 @@
     background-attachment: fixed;
   }
 }
-.neko-darkmode body {
+.navi_darkmode body {
   background: radial-gradient(circle at 12% 15%, rgba(255, 52, 90, 0.18), transparent 38%),
     radial-gradient(circle at 84% 80%, rgba(255, 36, 70, 0.14), transparent 44%),
     linear-gradient(140deg, #120208 0%, #1a030c 50%, #0b0106 100%);
@@ -3242,7 +3241,7 @@ text-shadow: 0 0 16px rgba(0, 234, 255, 0.10);
   filter: blur(0.8px);
   animation: crt-scanline-sweep 16.4s linear infinite;
 }
-.neko-darkmode .scanline::before {
+.navi_darkmode .scanline::before {
   background: linear-gradient(
     90deg,
     transparent 0%,
@@ -3253,7 +3252,7 @@ text-shadow: 0 0 16px rgba(0, 234, 255, 0.10);
   );
   box-shadow: 0 0 6px rgba(255, 72, 104, 0.22), 0 0 24px rgba(255, 72, 104, 0.08);
 }
-.neko-darkmode .scanline::after {
+.navi_darkmode .scanline::after {
   background: linear-gradient(
     to bottom,
     rgba(255, 72, 104, 0),
@@ -3271,7 +3270,7 @@ text-shadow: 0 0 16px rgba(0, 234, 255, 0.10);
 .cybertxt::after {
   content: none;
 }
-.nekobvl {
+.navi_bvl {
   clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
 }
 .itemshape {
@@ -4042,7 +4041,7 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   letter-spacing: 0.14em;
   text-shadow: 0 0 10px rgba(0, 234, 255, 0.4);
 }
-.nekobtn {
+.navi_btn {
   --arwes-frames-bg-color: rgba(6, 37, 60, 0.58);
   --arwes-frames-line-color: rgba(67, 241, 255, 0.7);
   --arwes-frames-bg-filter: drop-shadow(0 0 8px rgba(0, 216, 255, 0.15));
@@ -4053,11 +4052,11 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   overflow: hidden;
   transform: translateZ(0);
 }
-.nekobtn:hover {
+.navi_btn:hover {
   border-color: rgba(57, 238, 255, 0.72);
   box-shadow: inset 0 0 0 1px rgba(42, 239, 255, 0.24), 0 0 16px rgba(0, 227, 255, 0.18);
 }
-.nekobtn:active {
+.navi_btn:active {
   transform: translateY(1px);
 }
 .octbtn {
@@ -4073,7 +4072,7 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
     0 8px
   );
 }
-.nekobtn2 {
+.navi_btn_2 {
   visibility: inherit !important;
 }
 .btn-content {
@@ -4097,7 +4096,7 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
       0 0 28px rgba(0, 251, 255, 0.24);
   }
 }
-.neko-btn {
+.navi_btn {
   --arwes-frames-bg-color: rgba(6, 36, 58, 0.46);
   --arwes-frames-line-color: rgba(71, 241, 255, 0.76);
   --arwes-frames-bg-filter: drop-shadow(0 0 7px rgba(0, 214, 255, 0.12));
@@ -4116,7 +4115,7 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.2s ease, color 0.2s ease;
 }
-.neko-btn-back {
+.navi_btn_back {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -4124,12 +4123,12 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   opacity: 0.54;
   transition: opacity 0.2s ease;
 }
-.neko-btn-frame {
+.navi_btn_frame {
   position: absolute;
   inset: 0;
   z-index: 1;
 }
-.neko-btn-content {
+.navi_btn_content {
   position: relative;
   z-index: 2;
   display: inline-flex;
@@ -4137,19 +4136,19 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   justify-content: center;
   width: 100%;
 }
-.neko-btn:hover {
+.navi_btn:hover {
   border-color: rgba(91, 245, 255, 0.9);
 }
-.neko-btn:hover .neko-btn-back {
+.navi_btn:hover .navi_btn_back {
   opacity: 0.78;
 }
-.neko-btn:active {
+.navi_btn:active {
   transform: translateY(1px);
 }
-.neko-btn-cyan-glow:hover {
+.navi_btn_cyan_glow:hover {
   animation: btn-hover-glow 1.1s ease-in-out infinite;
 }
-.neko-btn-cyan-glow:hover .neko-btn-content {
+.navi_btn_cyan_glow:hover .navi_btn_content {
   text-shadow: 0 0 11px rgba(0, 247, 255, 0.65);
 }
 @keyframes btn-hover-drift {
@@ -4163,10 +4162,10 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
 .newChat-btn:hover {
   animation: btn-hover-drift 0.75s ease-in-out infinite alternate;
 }
-.newChat-btn:hover .neko-btn-content {
+.newChat-btn:hover .navi_btn_content {
   text-shadow: 0 0 10px rgba(0, 245, 255, 0.55);
 }
-.neko-btn-disabled {
+.navi_btn_disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
@@ -4348,7 +4347,7 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   inset: 0;
   z-index: 1;
 }
-.fieldneko {
+.navi_field {
   --arwes-frames-bg-color: rgba(3, 22, 37, 0.65);
   --arwes-frames-line-color: rgba(57, 236, 255, 0.56);
   --arwes-frames-bg-filter: drop-shadow(0 0 5px rgba(0, 215, 255, 0.08));
@@ -4357,12 +4356,12 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   inset: 0;
   z-index: 1;
 }
-.nekoinput {
+.navi_input {
   color: #b4fbff;
   border-color: rgba(41, 232, 255, 0.3);
   background: linear-gradient(140deg, rgba(2, 17, 31, 0.95) 0%, rgba(3, 22, 40, 0.85) 100%);
 }
-.nekoinput:focus {
+.navi_input:focus {
   border-color: rgba(83, 242, 255, 0.78);
   box-shadow: 0 0 0 1px rgba(56, 239, 255, 0.45), 0 0 16px rgba(0, 221, 255, 0.22);
 }
@@ -4548,13 +4547,13 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   animation: crt-scanline 220ms linear both;
   mix-blend-mode: screen;
 }
-.nekotoast-in {
+.navi_toast_in {
   animation: tveffect 240ms cubic-bezier(0.19, 0.92, 0.34, 1) both;
 }
-.nekotoast-out {
+.navi_toast_out {
   animation: tveffect-close 130ms cubic-bezier(0.4, 0, 0.8, 0) both;
 }
-.nekonotif-cnt {
+.navi_notif_cnt {
   position: relative;
   overflow: hidden;
   border: 0 !important;
@@ -4640,14 +4639,14 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
     transform: translateY(54%) scaleX(0.25);
   }
 }
-.nekonotif-cnt[data-state="instant-open"],
-.nekonotif-cnt[data-state="delayed-open"] {
+.navi_notif_cnt[data-state="instant-open"],
+.navi_notif_cnt[data-state="delayed-open"] {
   animation: glitch-in 220ms cubic-bezier(0.19, 0.92, 0.34, 1) both;
 }
-.nekonotif-cnt[data-state="closed"] {
+.navi_notif_cnt[data-state="closed"] {
   animation: glitch-out 110ms cubic-bezier(0.4, 0, 0.8, 0) both;
 }
-.nekonotif-cnt::before {
+.navi_notif_cnt::before {
   content: "";
   position: absolute;
   inset: 2px;
@@ -4661,13 +4660,13 @@ text-shadow: 0 0 10px rgba(255, 234, 0, 0.692);
   animation: cyberpunk-tooltip-scanline 220ms linear both;
   mix-blend-mode: screen;
 }
-.nekotoltip {
+.navi_tooltip {
   pointer-events: none;
 }
-.nekotoltip-main {
+.navi_tooltip_main {
   opacity: 1;
 }
-.nekotoltip-inner {
+.navi_tooltip_inner {
   opacity: 0.72;
 }
 .tiptxt {

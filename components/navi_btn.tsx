@@ -16,11 +16,11 @@ import {
   Illuminator,
   useBleeps,
   useFrameAssembler,
-} from "@/components/ui/neko-fx"
+} from "@/components/ui/navi_fx"
 import { cn } from "@/lib/utils"
  type BleepNames = "hover" | "click"
 
-interface NekoBtnProps
+interface NaviBtnProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "onClick" | "onMouseEnter"> {
   className?: string
   color?: "primary" | "secondary"
@@ -32,7 +32,7 @@ interface NekoBtnProps
   onMouseEnter?: () => void
 }
 
-export const NekoBtn = memo(function NekoBtn({
+export const NaviBtn = memo(function NaviBtn({
   className,
   color = "primary",
   variant = "fill",
@@ -44,7 +44,7 @@ export const NekoBtn = memo(function NekoBtn({
   onClick,
   onMouseEnter,
   ...props
-}: NekoBtnProps) {
+}: NaviBtnProps) {
   const bleeps = useBleeps<BleepNames>()
   const frmRef = useRef<SVGSVGElement | null>(null)
   useFrameAssembler(frmRef as React.RefObject<HTMLElement | SVGElement>)
@@ -89,7 +89,7 @@ export const NekoBtn = memo(function NekoBtn({
         "hover:[--arwes-frames-bg-color:rgba(7,36,58,0.56)] hover:[--arwes-frames-line-color:rgba(102,246,255,0.95)]",
         colCls,
         varCls,
-        disabled && "neko-btn-disabled",
+        disabled && "navi_btn_disabled",
         className
       )}
       animated={animProp}
@@ -105,7 +105,7 @@ export const NekoBtn = memo(function NekoBtn({
       }}
       {...props}
     >
-      <div className="neko-btn-back">
+      <div className="navi_btn_back">
         <Illuminator size={120} color={glow} />
       </div>
       {frame === "nero" ? (
@@ -115,7 +115,7 @@ export const NekoBtn = memo(function NekoBtn({
           padding={1}
           cornerLength={12}
           cornerWidth={2}
-          className="neko-btn-frame pointer-events-none"
+          className="navi_btn_frame pointer-events-none"
         />
       ) : frame === "octagonX" ? (
         <FrameOctagon
@@ -127,7 +127,7 @@ export const NekoBtn = memo(function NekoBtn({
     rightBottom={false}
     squareSize={8}
           strokeWidth={2}
-          className="neko-btn-frame pointer-events-none"
+          className="navi_btn_frame pointer-events-none"
         />
       ) 
       : frame === "octagon" ? (
@@ -136,17 +136,17 @@ export const NekoBtn = memo(function NekoBtn({
           style={{ zIndex: 0 }}
           squareSize={8}
           strokeWidth={1.2}
-          className="neko-btn-frame pointer-events-none"
+          className="navi_btn_frame pointer-events-none"
         />
       ) : (
         <FrameUnderline
           elementRef={frmRef as React.RefObject<SVGSVGElement>}
           style={{ zIndex: 0 }}
           squareSize={8}
-          className="neko-btn-frame pointer-events-none"
+          className="navi_btn_frame pointer-events-none"
         />
       )}
-      <div className="neko-btn-content">{children}</div>
+      <div className="navi_btn_content">{children}</div>
     </Animated>
   )
 })

@@ -4,13 +4,13 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
-import { FrameUnderline, FrameOctagon } from "@/components/ui/neko-fx"
+import { FrameUnderline, FrameOctagon } from "@/components/ui/navi_fx"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import {
-  nekoUnder1,
-  nekoPanel1,
+  navi_under_1,
+  navi_panel_1,
 } from "@/components/ui/frames"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -239,10 +239,10 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="panelbox nekobvl bg-sidebar group-data-[variant=floating]:border-sidebar-border relative flex h-full w-full flex-col overflow-hidden group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="panelbox navi_bvl bg-sidebar group-data-[variant=floating]:border-sidebar-border relative flex h-full w-full flex-col overflow-hidden group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           <FrameUnderline
-            {...nekoPanel1}
+            {...navi_panel_1}
             className="maincard-frame pointer-events-none"
           />
           <div className="relative z-[2] flex h-full w-full flex-col">{children}</div>
@@ -541,7 +541,7 @@ function SidebarMenuButton({
       {...props}
     >
       <FrameUnderline
-        {...nekoUnder1}
+        {...navi_under_1}
         className="frame1 pointer-events-none"
       />
       {children}

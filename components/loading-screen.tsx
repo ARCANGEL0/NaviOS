@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import { Animator } from "@/components/ui/neko-fx"
-import { NekoTxt } from "@/components/ui/neko-txt"
+import { Animator } from "@/components/ui/navi_fx"
+import { NaviTxt } from "@/components/ui/navi_txt"
 
 interface LoadingScreenProps {
   onComplete: () => void
@@ -50,7 +50,7 @@ export function LoadingScreen({ onComplete }: LoadingScreenProps) {
               unoptimized
               className="h-28 w-28 object-contain"
             />
-            <NekoTxt
+            <NaviTxt
               as="p"
               className="mt-4 text-[0.8rem] uppercase tracking-[0.3em] text-cyan-200"
               text="N e k o | G P T"

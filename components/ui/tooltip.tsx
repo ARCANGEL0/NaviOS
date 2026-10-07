@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-import { FrameUnderline } from "@/components/ui/neko-fx"
+import { FrameUnderline } from "@/components/ui/navi_fx"
 
-import { NekoTxt } from "@/components/ui/neko-txt"
-import { nekoUnder1 } from "@/components/ui/frames"
+import { NaviTxt } from "@/components/ui/navi_txt"
+import { navi_under_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function TooltipProvider({
@@ -49,22 +49,22 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "nekonotif-cnt nekobvl relative z-50 w-fit px-3 py-1.5 text-xs text-balance",
+          "navi_notif_cnt navi_bvl relative z-50 w-fit px-3 py-1.5 text-xs text-balance",
           className
         )}
         {...props}
       >
         <FrameUnderline
-          {...nekoUnder1}
-          className="nekotoltip nekotoltip-main pointer-events-none absolute inset-0 z-[1]"
+          {...navi_under_1}
+          className="navi_tooltip navi_tooltip_main pointer-events-none absolute inset-0 z-[1]"
         />
         <FrameUnderline
-          {...nekoUnder1}
-          className="nekotoltip nekotoltip-inner pointer-events-none absolute inset-[2px] z-[1]"
+          {...navi_under_1}
+          className="navi_tooltip navi_tooltip_inner pointer-events-none absolute inset-[2px] z-[1]"
         />
         <div className="relative z-[2]">
           {typeof children === "string" || typeof children === "number" ? (
-            <NekoTxt
+            <NaviTxt
               as="span"
               text={String(children)}
               className="tiptxt"

@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect } from "react"
-import { Text, useBleeps } from "@/components/ui/neko-fx"
+import { Text, useBleeps } from "@/components/ui/navi_fx"
 
-interface NekoTxtProps {
+interface NaviTxtProps {
   text: string
   as?: keyof HTMLElementTagNameMap
   className?: string
@@ -11,13 +11,13 @@ interface NekoTxtProps {
   blink?: boolean
 }
 
-export function NekoTxt({
+export function NaviTxt({
   text,
   as = "span",
   className,
   trigger,
   blink = false,
-}: NekoTxtProps) {
+}: NaviTxtProps) {
   const bleeps = useBleeps<"type">()
 
   useEffect(() => {

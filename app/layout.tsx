@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LayoutWrapper } from "@/components/layout-wrapper";
-import { NekoUiProvider } from "@/components/neko-ui";
+import { NaviUiProvider } from "@/components/navi_ui";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +33,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bodyfx`}
       >
-        <NekoUiProvider>
+        <NaviUiProvider>
           <div className="appwrap">
             <div className="scanline" />
             <LayoutWrapper>{children}</LayoutWrapper>
           </div>
-        </NekoUiProvider>
+        </NaviUiProvider>
       </body>
     </html>
   );

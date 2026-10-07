@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
-import { FrameBase } from "@/components/ui/neko-fx"
+import { FrameBase } from "@/components/ui/navi_fx"
 
-import { nekoCtrl1 } from "@/components/ui/frames"
+import { navi_ctrl_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function Avatar({
@@ -16,13 +16,13 @@ function Avatar({
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "nekobvl relative flex size-8 shrink-0 overflow-hidden border border-cyan-400/40 bg-slate-950/70",
+        "navi_bvl relative flex size-8 shrink-0 overflow-hidden border border-cyan-400/40 bg-slate-950/70",
         className
       )}
       {...props}
     >
       <FrameBase
-        settings={nekoCtrl1}
+        settings={navi_ctrl_1}
         className="frame1 pointer-events-none"
       />
       {children}

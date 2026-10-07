@@ -7,9 +7,9 @@ import {
   createFrameNefrexSettings,
   createFrameUnderlineSettings,
   createFrameOctagonSettings
-} from "@/components/ui/neko-fx"
+} from "@/components/ui/navi_fx"
 
-export const nekoUnder1 = createFrameUnderlineSettings({
+export const navi_under_1 = createFrameUnderlineSettings({
   styled: true,
   animated: true,
   squareSize: 14,
@@ -17,7 +17,7 @@ export const nekoUnder1 = createFrameUnderlineSettings({
 })
 
 
-export const nekoOctagon1 = createFrameOctagonSettings({
+export const navi_octagon_1 = createFrameOctagonSettings({
 
   styled: true,
   animated: true,
@@ -30,7 +30,7 @@ export const nekoOctagon1 = createFrameOctagonSettings({
 
 
  
-export const nekoCard1 = createFrameNefrexSettings({
+export const navi_card_1 = createFrameNefrexSettings({
   styled: true,
   animated: true,
   leftTop: false,
@@ -43,7 +43,7 @@ export const nekoCard1 = createFrameNefrexSettings({
   largeLineLength: 54,
 })
 
-export const nekoCtrl1 = createFrameNefrexSettings({
+export const navi_ctrl_1 = createFrameNefrexSettings({
   styled: true,
   animated: true,
   leftTop: false,
@@ -56,7 +56,7 @@ export const nekoCtrl1 = createFrameNefrexSettings({
   largeLineLength: 54,
 })
 
-export const nekoPanel1 = createFrameNefrexSettings({
+export const navi_panel_1 = createFrameNefrexSettings({
   styled: true,
   animated: true,
   leftTop: false,
@@ -69,13 +69,13 @@ export const nekoPanel1 = createFrameNefrexSettings({
   largeLineLength: 54,
 })
 
-export const nekoField1 = createFrameCornersSettings({
+export const navi_field_1 = createFrameCornersSettings({
   styled: true,
   animated: true,
   strokeWidth: 1,
 })
 
-export const nekoField2 = createFrameNefrexSettings({
+export const navi_field_2 = createFrameNefrexSettings({
   styled: true,
   animated: true,
   leftTop: true,
@@ -88,7 +88,7 @@ export const nekoField2 = createFrameNefrexSettings({
   largeLineLength: 36,
 })
 
-export const nekoKranox1 = createFrameKranoxSettings({
+export const navi_kranox_1 = createFrameKranoxSettings({
   styled: true,
   animated: true,
   strokeWidth: 1,
@@ -98,7 +98,7 @@ export const nekoKranox1 = createFrameKranoxSettings({
   largeLineLength: 30,
 })
 
-export const nekoLines1 = createFrameLinesSettings({
+export const navi_lines_1 = createFrameLinesSettings({
   styled: true,
   animated: true,
   padding: 4,

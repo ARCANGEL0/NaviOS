@@ -3,9 +3,9 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
-import { FrameBase } from "@/components/ui/neko-fx"
+import { FrameBase } from "@/components/ui/navi_fx"
 
-import { nekoPanel1 } from "@/components/ui/frames"
+import { navi_panel_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
@@ -60,7 +60,7 @@ function SheetContent({
       <SheetPrimitive.Content
         data-slot="sheet-content"
         className={cn(
-          "panelbox nekobvl bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 border-cyan-400/35 shadow-[0_0_22px_rgba(0,231,255,0.2)] transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+          "panelbox navi_bvl bg-background/95 data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 border-cyan-400/35 shadow-[0_0_22px_rgba(0,231,255,0.2)] transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
           side === "right" &&
             "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm",
           side === "left" &&
@@ -74,7 +74,7 @@ function SheetContent({
         {...props}
       >
         <FrameBase
-          settings={nekoPanel1}
+          settings={navi_panel_1}
           className="maincard-frame pointer-events-none"
         />
         <div className="relative z-[2] flex h-full flex-col">{children}</div>

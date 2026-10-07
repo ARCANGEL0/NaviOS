@@ -9,15 +9,15 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { useChatSess, type ChatMode } from "@/components/layout-wrapper"
 import { useChatStore } from "@/hooks/use-chat-store"
 import { Message, type MessageRevision } from "@/lib/chat-store"
-import { NekoBtn } from "@/components/neko-btn"
-import { FrameCorners, FrameLines, FrameNefrex, FrameUnderline, useBleeps } from "@/components/ui/neko-fx"
-import { NekoTxt } from "@/components/ui/neko-txt"
+import { NaviBtn } from "@/components/navi_btn"
+import { FrameCorners, FrameLines, FrameNefrex, FrameUnderline, useBleeps } from "@/components/ui/navi_fx"
+import { NaviTxt } from "@/components/ui/navi_txt"
 import { SlowDecipherText } from "@/components/ui/decipher"
 import { AssistantMarkdown } from "@/components/ui/assistant-markdown"
 import { getCachedImage, setCachedImage } from "@/lib/image-cache"
 import {
-  nekoUnder1,
-  nekoPanel1,
+  navi_under_1,
+  navi_panel_1,
 } from "@/components/ui/frames"
 interface ChatInterfaceProps {
   chatId?: string
@@ -81,7 +81,7 @@ const errByKind: Record<"api" | "img" | "vis", string[]> = {
   ],
 }
 
-type NekoMsg = {
+type NaviMsg = {
   role: "user" | "assistant"
   content: string
 }
@@ -620,11 +620,11 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     }
   }
 
-  const nekoMsgs = (
+  const naviMsgs = (
     targetChatId: string,
     fallbackPrompt: string,
     excludedMessageIds?: Set<string>
-  ): NekoMsg[] => {
+  ): NaviMsg[] => {
     const targetChat = getChat(targetChatId)
     const messagesPayload = (targetChat?.messages ?? [])
       .filter((message) => {
@@ -1084,7 +1084,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     loadMsgId: string,
     excludedMessageIds?: Set<string>
   ): Promise<string> => {
-    const conversation = nekoMsgs(targetChatId, prompt, excludedMessageIds)
+    const conversation = naviMsgs(targetChatId, prompt, excludedMessageIds)
     let taskId: string | undefined
     let isPolling = false
 
@@ -1196,14 +1196,14 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     }
   }
 
-  const nekoai = async (
+  const naviAI = async (
     targetChatId: string,
     prompt: string,
     chatName: string,
     signal: AbortSignal,
     excludedMessageIds?: Set<string>
   ): Promise<string> => {
-    const messages = nekoMsgs(targetChatId, prompt, excludedMessageIds)
+    const messages = naviMsgs(targetChatId, prompt, excludedMessageIds)
 
     const response = await reqJson(
       API_ENDPOINTS.neko,
@@ -1409,7 +1409,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       const isVis = Boolean(imgFile)
 
       if (!isVis) {
-        const responseText = await nekoai(
+        const responseText = await naviAI(
           targetChatId,
           prompt,
           chatName,
@@ -1833,9 +1833,9 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       showToast("[U n l o c k e d]")
     }
 
-    window.addEventListener("neko-darkmode-toast", onDarkToast)
+    window.addEventListener("navi_darkmode_toast", onDarkToast)
     return () => {
-      window.removeEventListener("neko-darkmode-toast", onDarkToast)
+      window.removeEventListener("navi_darkmode_toast", onDarkToast)
     }
   }, [showToast])
 
@@ -2205,7 +2205,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
         aria-modal="true"
         aria-label="Image gallery"
       >
-        <NekoBtn
+        <NaviBtn
           type="button"
           frame="octagon"
           className="octbtn downloadimg absolute left-4 top-4 z-[120] h-11 w-20 min-h-0 p-0 sm:h-14 sm:w-24"
@@ -2218,9 +2218,9 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
           aria-label="Download image"
         >
           <Download className="h-6 w-6 sm:h-8 sm:w-8" />
-        </NekoBtn>
+        </NaviBtn>
 
-        <NekoBtn
+        <NaviBtn
           type="button"
           frame="octagon"
           className="octbtn remove-filebtn absolute right-4 top-4 z-[120] h-11 w-20 min-h-0 p-0 sm:h-14 sm:w-24"
@@ -2231,7 +2231,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
           aria-label="Close gallery"
         >
           <X className="h-6 w-6 sm:h-8 sm:w-8" />
-        </NekoBtn>
+        </NaviBtn>
 
         <div
           className="gal-inside relative inline-flex  items-center justify-center p-0"
@@ -2246,7 +2246,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
             smallLineLength={65}
             className="gallerylines pointer-events-none absolute inset-0 z-[1]"
           />
-          <NekoBtn
+          <NaviBtn
             type="button"
             frame="octagon"
             className="gal-navigatebtn active:translate-y-0 absolute left-[2%] z-[60] h-14 w-14 cursor-pointer sm:h-24 sm:w-24 gal-prev"
@@ -2257,7 +2257,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
             aria-label="Previous image"
           >
             <ChevronLeft className="h-8 w-8 sm:h-14 sm:w-14" />
-          </NekoBtn>
+          </NaviBtn>
 
           <div className="img-inframe   flex items-center justify-center">
             <FrameLines
@@ -2280,7 +2280,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
               />
             </div>
           </div>
-          <NekoBtn
+          <NaviBtn
             type="button"
             frame="octagon"
             className="gal-navigatebtn active:translate-y-0 absolute right-[2%] z-[60] h-14 w-14 cursor-pointer sm:h-24 sm:w-24 gal-next"
@@ -2291,7 +2291,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
             aria-label="Next image"
           >
             <ChevronRight className="h-8 w-8 sm:h-14 sm:w-14" />
-          </NekoBtn>
+          </NaviBtn>
         </div>
 
         <div className="galery2 absolute bottom-4 left-1/2 z-[40] flex h-10 w-24 -translate-x-1/2 items-center justify-center overflow-hidden px-3 py-1 text-sm text-cyan-100">
@@ -2304,7 +2304,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
             smallLineLength={1}
             className="galery2frame pointer-events-none absoluteinset-0 z-[1]"
           />
-          <NekoTxt
+          <NaviTxt
             as="span"
             className="galtext relative z-[2] text-center"
             text={`${activeGalleryIndex + 1} / ${galleryImages.length}`}
@@ -2373,7 +2373,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                         }`}
                       >
                           <FrameNefrex
-                            {...nekoPanel1}
+                            {...navi_panel_1}
                             style={bubbleStyle}
                             className="pointer-events-none absolute inset-0 z-[1]"
                           />
@@ -2429,7 +2429,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           )}
                           {message.attachments && message.attachments.length > 0 && (
                             <div className="mt-2 text-sm text-cyan-300">
-                              <NekoTxt
+                              <NaviTxt
                                 as="span"
                                 className="text-sm text-cyan-300"
                                 text={`Attached: ${message.attachments.length} file(s)`}
@@ -2468,7 +2468,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                               padding={1}
                             />
                             <Copy className="relative z-[2] h-3.5 w-3.5" />
-                            <NekoTxt
+                            <NaviTxt
                               as="span"
                               className="relative z-[2]"
                               text="Copy text"
@@ -2492,7 +2492,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                                 padding={1}
                               />
                               <Download className="relative z-[2] h-3.5 w-3.5" />
-                              <NekoTxt
+                              <NaviTxt
                                 as="span"
                                 className="relative z-[2]"
                                 text="Download image"
@@ -2511,7 +2511,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                                 padding={1}
                               />
                               <Copy className="relative z-[2] h-3.5 w-3.5" />
-                              <NekoTxt
+                              <NaviTxt
                                 as="span"
                                 className="relative z-[2]"
                                 text="Copy text"
@@ -2532,7 +2532,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                               padding={1}
                             />
                             <RotateCcw className="relative z-[2] h-3.5 w-3.5" />
-                            <NekoTxt
+                            <NaviTxt
                               as="span"
                               className="relative z-[2]"
                               text="Regenerate"
@@ -2553,7 +2553,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                                 padding={1}
                               />
                               <Pencil className="relative z-[2] h-3.5 w-3.5" />
-                              <NekoTxt
+                              <NaviTxt
                                 as="span"
                                 className="relative z-[2]"
                                 text="Edit"
@@ -2650,7 +2650,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <span className="inline-flex">
-                          <NekoBtn
+                          <NaviBtn
                             type="button"
                             frame="octagon"
                             onClick={() => fileInputRef.current?.click()}
@@ -2659,15 +2659,15 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                             aria-disabled={noAttach}
                           >
                             <Paperclip className="h-4 w-4" />
-                          </NekoBtn>
+                          </NaviBtn>
                         </span>
                       </TooltipTrigger>
-                      <TooltipContent className="nekonotif-cnt" side="top" sideOffset={7}>
+                      <TooltipContent className="navi_notif_cnt" side="top" sideOffset={7}>
                         {attachWhy}
                       </TooltipContent>
                     </Tooltip>
                   ) : (
-                    <NekoBtn
+                    <NaviBtn
                       type="button"
                       frame="octagon"
                       onClick={() => fileInputRef.current?.click()}
@@ -2675,25 +2675,25 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                       disabled={noAttach}
                     >
                       <Paperclip className="h-4 w-4" />
-                    </NekoBtn>
+                    </NaviBtn>
                   )}
 
                   {isRequestInFlight ? (
-                    <NekoBtn
+                    <NaviBtn
                       type="button"
                       frame="octagon"
                       onClick={() => stopReq()}
                       className="octbtn chat-btn oct-stop h-8 w-8 min-h-0 p-0"
                     >
                       <Square className="h-4 w-4" />
-                    </NekoBtn>
+                    </NaviBtn>
                   ) : (
                     <>
                       {sendWhy ? (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="inline-flex">
-                              <NekoBtn
+                              <NaviBtn
                                 type="button"
                                 frame="octagon"
                                 onClick={handleSend}
@@ -2702,11 +2702,11 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                                 className="octbtn h-8 w-8 min-h-0 p-0"
                               >
                                 <Send className="h-4 w-4" />
-                              </NekoBtn>
+                              </NaviBtn>
                             </span>
                           </TooltipTrigger>
                           <TooltipContent
-                            className="nekonotif-cnt"
+                            className="navi_notif_cnt"
                             side="top"
                             sideOffset={7}
                           >
@@ -2714,7 +2714,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           </TooltipContent>
                         </Tooltip>
                       ) : (
-                        <NekoBtn
+                        <NaviBtn
                           type="button"
                           frame="octagon"
                           onClick={handleSend}
@@ -2722,7 +2722,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           className="octbtn h-8 w-8 min-h-0 p-0"
                         >
                           <Send className="h-4 w-4" />
-                        </NekoBtn>
+                        </NaviBtn>
                       )}
                     </>
                   )}
@@ -2732,12 +2732,12 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
 
             {attachments.length > 0 && (
               <div className="mt-2 flex items-center gap-2 text-sm text-cyan-300">
-                <NekoTxt
+                <NaviTxt
                   as="span"
                   text={`${attachments.length} image${attachments.length > 1 ? "s" : ""} attached${chatMode === "image" ? ` (${attachments.length}/4)` : ""}`}
                   trigger={`attachments-${attachments.length}-${chatMode}`}
                 />
-                <NekoBtn
+                <NaviBtn
                   type="button"
                   frame="octagonX"
                   onClick={clearAttach}
@@ -2745,7 +2745,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                   aria-label="Remove attachment"
                 >
                   <Trash2 className="h-4 w-4" />
-                </NekoBtn>
+                </NaviBtn>
               </div>
             )}
           </div>
@@ -2755,22 +2755,22 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       {historyToastMessage && (
         <div className="pointer-events-none fixed top-4 left-1/2 z-[10001] w-max max-w-[85vw] -translate-x-1/2">
           <div
-            className={`toastnotif nekonotif-cnt relative px-3 py-1.5 ${
-              isHistoryToastExiting ? "nekotoast-out" : "nekotoast-in"
+            className={`toastnotif navi_notif_cnt relative px-3 py-1.5 ${
+              isHistoryToastExiting ? "navi_toast_out" : "navi_toast_in"
             }`}
           >
             <FrameUnderline
-              {...nekoUnder1}
+              {...navi_under_1}
               style={toastFrameStyle}
-              className="nekotoltip nekotoltip-main pointer-events-none absolute inset-0 z-[1]"
+              className="navi_tooltip navi_tooltip_main pointer-events-none absolute inset-0 z-[1]"
             />
             <FrameUnderline
-              {...nekoUnder1}
+              {...navi_under_1}
               style={toastFrameStyle}
-              className="nekotoltip nekotoltip-inner pointer-events-none absolute inset-[2px] z-[1]"
+              className="navi_tooltip navi_tooltip_inner pointer-events-none absolute inset-[2px] z-[1]"
             />
             <div className="relative z-[2]">
-              <NekoTxt
+              <NaviTxt
                 as="span"
                 className="tiptxt"
                 text={historyToastMessage}
@@ -2783,22 +2783,22 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       {toastMessage && (
         <div className="pointer-events-none fixed bottom-24 left-1/2 z-[10000] w-max max-w-[85vw] -translate-x-1/2 sm:bottom-6 sm:left-auto sm:right-6 sm:translate-x-0">
           <div
-            className={`toastnotif nekonotif-cnt relative px-3 py-1.5 ${
-              isToastExiting ? "nekotoast-out" : "nekotoast-in"
+            className={`toastnotif navi_notif_cnt relative px-3 py-1.5 ${
+              isToastExiting ? "navi_toast_out" : "navi_toast_in"
             }`}
           >
             <FrameUnderline
-              {...nekoUnder1}
+              {...navi_under_1}
               style={toastFrameStyle}
-              className="nekotoltip nekotoltip-main pointer-events-none absolute inset-0 z-[1]"
+              className="navi_tooltip navi_tooltip_main pointer-events-none absolute inset-0 z-[1]"
             />
             <FrameUnderline
-              {...nekoUnder1}
+              {...navi_under_1}
               style={toastFrameStyle}
-              className="nekotoltip nekotoltip-inner pointer-events-none absolute inset-[2px] z-[1]"
+              className="navi_tooltip navi_tooltip_inner pointer-events-none absolute inset-[2px] z-[1]"
             />
             <div className="relative z-[2]">
-              <NekoTxt
+              <NaviTxt
                 as="span"
                 className="tiptxt"
                 text={toastMessage}

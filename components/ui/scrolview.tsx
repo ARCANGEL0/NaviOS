@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-import { FrameBase } from "@/components/ui/neko-fx"
+import { FrameBase } from "@/components/ui/navi_fx"
 
-import { nekoField1 } from "@/components/ui/frames"
+import { navi_field_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function ScrollArea({
@@ -19,8 +19,8 @@ function ScrollArea({
       {...props}
     >
       <FrameBase
-        settings={nekoField1}
-        className="fieldneko pointer-events-none"
+        settings={navi_field_1}
+        className="navi_field pointer-events-none"
       />
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"

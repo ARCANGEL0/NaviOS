@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Animator, FrameUnderline } from "@/components/ui/neko-fx"
+import { Animator, FrameUnderline } from "@/components/ui/navi_fx"
 
-import { nekoUnder1 } from "@/components/ui/frames"
+import { navi_under_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function Card({ className, children, ...props }: React.ComponentProps<"div">) {
@@ -12,13 +12,13 @@ function Card({ className, children, ...props }: React.ComponentProps<"div">) {
       <div
         data-slot="card"
         className={cn(
-          "maincard nekobvl bg-card text-card-foreground relative flex flex-col gap-6 overflow-hidden border py-6 shadow-sm",
+          "maincard navi_bvl bg-card text-card-foreground relative flex flex-col gap-6 overflow-hidden border py-6 shadow-sm",
           className
         )}
         {...props}
       >
         <FrameUnderline
-          {...nekoUnder1}
+          {...navi_under_1}
           className="maincard-frame pointer-events-none"
         />
         {children}

@@ -3,14 +3,14 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
-import { Animator, FrameBase, FrameOctagon, useBleeps } from "@/components/ui/neko-fx"
+import { Animator, FrameBase, FrameOctagon, useBleeps } from "@/components/ui/navi_fx"
 
-import { NekoTxt } from "@/components/ui/neko-txt"
-import { nekoCtrl1 } from "@/components/ui/frames"
+import { NaviTxt } from "@/components/ui/navi_txt"
+import { navi_ctrl_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "nekobtn nekobvl relative inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80",
+  "navi_btn navi_bvl relative inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-150 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80",
   {
     variants: {
       variant: {
@@ -85,13 +85,13 @@ function Button({
           />
         ) : (
           <FrameBase
-            settings={nekoCtrl1}
+            settings={navi_ctrl_1}
             className="frame1 pointer-events-none"
           />
         )}
         <span className="btn-content">
           {childrenArePlainText ? (
-            <NekoTxt as="span" text={String(props.children)} trigger={String(props.children)} />
+            <NaviTxt as="span" text={String(props.children)} trigger={String(props.children)} />
           ) : (
             props.children
           )}

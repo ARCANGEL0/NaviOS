@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Animator, FrameNefrex, FrameNero, FrameUnderline } from "@/components/ui/neko-fx"
+import { Animator, FrameNefrex, FrameNero, FrameUnderline } from "@/components/ui/navi_fx"
 
 import { cn } from "@/lib/utils"
 
@@ -27,10 +27,10 @@ const Textarea = React.forwardRef<
   return (
     <div className="relative w-full">
       {frame === "underline" && (
-        <FrameUnderline className="fieldneko pointer-events-none" />
+        <FrameUnderline className="navi_field pointer-events-none" />
       )}
         {frame === "nero" && (
-        <FrameNero className="fieldneko pointer-events-none" />
+        <FrameNero className="navi_field pointer-events-none" />
       )}
       {frame === "nefrex" && (
         <Animator active duration={{ enter: 0.22, exit: 0.12 }}>
@@ -56,7 +56,7 @@ const Textarea = React.forwardRef<
         data-slot="textarea"
         style={style}
         className={cn(
-          "nekoinput chatbox placeholder:text-muted-foreground relative z-[3] block min-h-16 w-full border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          "navi_input chatbox placeholder:text-muted-foreground relative z-[3] block min-h-16 w-full border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
           "aria-invalid:border-destructive aria-invalid:ring-destructive/30",
           className
         )}

@@ -8,8 +8,8 @@ import {
   GridLines,
   MovingLines,
   useBleeps,
-} from "@/components/ui/neko-fx"
-import type { BleepsManagerProps } from "@/components/ui/neko-fx"
+} from "@/components/ui/navi_fx"
+import type { BleepsManagerProps } from "@/components/ui/navi_fx"
 import {
   createContext,
   useContext,
@@ -35,7 +35,7 @@ const uiSel = [
   "input",
   "textarea",
   "select",
-  "[data-neko-interactive]",
+  "[data-navi_interactive]",
 ].join(",")
 
 function isDisEl(element: Element): boolean {
@@ -145,15 +145,15 @@ interface UiProviderProps {
   children: ReactNode
 }
 
-export function useNekoUi() {
+export function useNaviUi() {
   const context = useContext(UiCtx)
   if (!context) {
-    throw new Error("useNekoUi must be used within NekoUiProvider. /debug test")
+    throw new Error("useNaviUi must be used within NaviUiProvider. /debug test")
   }
   return context
 }
 
-export function NekoUiProvider({ children }: UiProviderProps) {
+export function NaviUiProvider({ children }: UiProviderProps) {
   const [animOn, setAnimOn] = useState(true)
 
   const bleepCfg = useMemo<BleepsManagerProps<BleepName>>(

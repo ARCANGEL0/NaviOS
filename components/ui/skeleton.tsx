@@ -1,6 +1,6 @@
-import { FrameBase } from "@/components/ui/neko-fx"
+import { FrameBase } from "@/components/ui/navi_fx"
 
-import { nekoField1 } from "@/components/ui/frames"
+import { navi_field_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
@@ -11,8 +11,8 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     >
       <FrameBase
-        settings={nekoField1}
-        className="fieldneko pointer-events-none"
+        settings={navi_field_1}
+        className="navi_field pointer-events-none"
       />
     </div>
   )

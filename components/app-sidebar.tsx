@@ -18,13 +18,13 @@ import { MessageSquare, Pencil, Trash2 } from "lucide-react"
 import { useChatStore } from "@/hooks/use-chat-store"
 import { ScrollArea } from "@/components/ui/scrolview"
 import { Input } from "@/components/ui/input"
-import { Animator, FrameNefrex, FrameUnderline, useBleeps } from "@/components/ui/neko-fx"
-import { NekoBtn } from "@/components/neko-btn"
-import { NekoTxt } from "@/components/ui/neko-txt"
+import { Animator, FrameNefrex, FrameUnderline, useBleeps } from "@/components/ui/navi_fx"
+import { NaviBtn } from "@/components/navi_btn"
+import { NaviTxt } from "@/components/ui/navi_txt"
 import {
-  nekoUnder1,
-  nekoCard1,
-  nekoPanel1,
+  navi_under_1,
+  navi_card_1,
+  navi_panel_1,
 } from "@/components/ui/frames"
 
 interface AppSidebarProps {
@@ -200,7 +200,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
     <Sidebar className={`border-r border-cyan-500/20 ${isDarkMode ? "sidebar-dark-locked" : ""}`}>
       <SidebarContent className="relative flex h-full flex-col gap-0 overflow-hidden bg-black/5 backdrop-blur-sm">
         <FrameNefrex
-          {...nekoPanel1}
+          {...navi_panel_1}
           className="pointer-events-none absolute inset-1 z-[1] opacity-55"
         />
         <Image
@@ -209,20 +209,20 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
           width={96}
           height={96}
           unoptimized
-          className="nekoLogo relative z-10 mx-auto h-24 w-24 bg-transparent object-contain"
+          className="navi_logo relative z-10 mx-auto h-24 w-24 bg-transparent object-contain"
         />
 
         <div className="relative z-10 flex h-full flex-col content-center justify-center gap-0 justify-items-center">
           <SidebarSeparator />
 
-          <NekoBtn
+          <NaviBtn
             onClick={makeChat}
             frame="underline"
-            className="neko-btn-cyan-glow newChat-btn mx-3 mt-2 w-auto justify-center"
+            className="navi_btn_cyan_glow newChat-btn mx-3 mt-2 w-auto justify-center"
             disabled={isDarkMode}
           >
-            <NekoTxt as="span" className="font-medium tracking-[0.16em]" text="[+] NEW CHAT" trigger="new-chat" />
-          </NekoBtn>
+            <NaviTxt as="span" className="font-medium tracking-[0.16em]" text="[+] NEW CHAT" trigger="new-chat" />
+          </NaviBtn>
 
           <SidebarGroup className="flex min-h-0 flex-1 flex-col">
             <SidebarGroupContent className="mt-2 flex min-h-0 flex-1">
@@ -243,7 +243,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
                       >
                         <div className="group relative grid min-w-0 grid-cols-[minmax(0,3fr)_auto]  items-center gap-3">
                           <FrameNefrex
-                            {...nekoCard1}
+                            {...navi_card_1}
                             className={`pointer-events-none absolute inset-0 z-0 transition-opacity ${
                               isUnavailable
                                 ? "opacity-35 sidebar-unavailable-frame"
@@ -289,7 +289,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
                                 className="h-7 mt-10 border-cyan-400/70 text-xs text-cyan-100 shadow-[0_0_0_1px_rgba(0,255,255,0.35),0_0_10px_rgba(0,255,255,0.25)] focus-visible:ring-cyan-300"
                               />
                             ) : (
-                              <NekoTxt
+                              <NaviTxt
                                 as="span"
                                 className="block min-w-0 flex-1 truncate pr-1"
                                 text={chat.title}
@@ -300,7 +300,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
 
                           {!hideForNew && !isEditing && !isDarkMode && (
                             <div className="relative sidebuttons flex items-center gap-1 sm:gap-2">
-                              <NekoBtn
+                              <NaviBtn
                                 type="button"
                                 frame="octagon"
                                 className="octbtn sidebar-btn h-6 w-6 min-h-0 shrink-0 p-0 sm:h-8 sm:w-8"
@@ -308,8 +308,8 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
                                 aria-label="Rename session"
                               >
                                 <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                              </NekoBtn>
-                              <NekoBtn
+                              </NaviBtn>
+                              <NaviBtn
                                 type="button"
                                 frame="octagon"
                                 className="octbtn sidebar-btn sidebar-btn-delete h-6 w-6 min-h-0 shrink-0 p-0 sm:h-8 sm:w-8"
@@ -317,7 +317,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
                                 aria-label="Delete session"
                               >
                                 <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                              </NekoBtn>
+                              </NaviBtn>
                             </div>
                           )}
                         </div>                                                                              
@@ -335,7 +335,7 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
               href="https://github.com/ARCANGEL0/NekoCLI"
               target="_blank"
               rel="noreferrer"
-              className="block nekocli font-semibold uppercase tracking-[0.2em] text-cyan-200/80 transition-colors "
+              className="block navi_cli font-semibold uppercase tracking-[0.2em] text-cyan-200/80 transition-colors "
             >
               Terminal version available! Click here!
             </a>
@@ -356,19 +356,19 @@ export function AppSidebar({ curChatId, chatMode, darkChatId, onChatSelect, onNe
         createPortal(
           notifToast ? (
             <div className="pointer-events-none fixed bottom-24 left-1/2 z-[10000] w-max max-w-[85vw] -translate-x-1/2 sm:bottom-6 sm:left-auto sm:right-6 sm:translate-x-0">
-              <div className="toastnotif nekonotif-cnt nekotoast-in relative px-3 py-1.5">
+              <div className="toastnotif navi_notif_cnt navi_toast_in relative px-3 py-1.5">
                 <FrameUnderline
-                  {...nekoUnder1}
+                  {...navi_under_1}
                   style={toastFrameStyle}
-                  className="nekotoltip nekotoltip-main pointer-events-none absolute inset-0 z-[1]"
+                  className="navi_tooltip navi_tooltip_main pointer-events-none absolute inset-0 z-[1]"
                 />
                 <FrameUnderline
-                  {...nekoUnder1}
+                  {...navi_under_1}
                   style={toastFrameStyle}
-                  className="nekotoltip nekotoltip-inner pointer-events-none absolute inset-[2px] z-[1]"
+                  className="navi_tooltip navi_tooltip_inner pointer-events-none absolute inset-[2px] z-[1]"
                 />
                 <div className="relative z-[2]">
-                  <NekoTxt
+                  <NaviTxt
                     as="span"
                     className="tiptxt"
                     text={notifToast}

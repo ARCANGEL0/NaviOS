@@ -4,11 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { useChatStore } from "@/hooks/use-chat-store"
-import { Animator, FrameLines, FrameHeader } from "@/components/ui/neko-fx"
-import { NekoBtn } from "@/components/neko-btn"
+import { Animator, FrameLines, FrameHeader } from "@/components/ui/navi_fx"
+import { NaviBtn } from "@/components/navi_btn"
 import { Bug, BugOff, ImagePlus, PenLine } from "lucide-react"
-import { useNekoUi } from "@/components/neko-ui"
-import { NekoTxt } from "@/components/ui/neko-txt"
+import { useNaviUi } from "@/components/navi_ui"
+import { NaviTxt } from "@/components/ui/navi_txt"
 import { SlowDecipherText } from "@/components/ui/decipher"
 
 interface LayoutWrapperProps {
@@ -41,7 +41,7 @@ export function useChatSess() {
 
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const { getOrNew, getChat, createTemporaryChat, deleteChat } = useChatStore()
-  const { animOn, toggleAnim } = useNekoUi()
+  const { animOn, toggleAnim } = useNaviUi()
   const [curChatId, setCurChatId] = useState<string | undefined>()
   const [chatMode, setChatMode] = useState<ChatMode>("chat")
   const [darkChatId, setDarkChatId] = useState<string | undefined>()
@@ -158,13 +158,13 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
     if (typeof document === "undefined") return
     const root = document.documentElement
     if (!animOn) {
-      root.classList.add("neko-darkmode")
+      root.classList.add("navi_darkmode")
     } else {
-      root.classList.remove("neko-darkmode")
+      root.classList.remove("navi_darkmode")
     }
 
     if (prevAnimOnRef.current && !animOn) {
-      window.dispatchEvent(new CustomEvent("neko-darkmode-toast"))
+      window.dispatchEvent(new CustomEvent("navi_darkmode_toast"))
     }
     prevAnimOnRef.current = animOn
   }, [animOn])
@@ -212,7 +212,7 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
                     <div className="relative z-10 flex min-w-0 flex-1 items-center">
                       <div className="flex flex-1 items-center gap-3 ">
                       <SidebarTrigger className="text-cyan-400 hover:text-cyan-300 mr-0" />
-                        <NekoBtn
+                        <NaviBtn
                           id="anim-toggle"
                           frame="octagon"
                           aria-label={animOn ? "Disable animations" : "Enable animations"}
@@ -229,9 +229,9 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
                           ) : (
                             <Bug className="h-4 w-4" />
                           )}
-                        </NekoBtn>
+                        </NaviBtn>
                       <div className="ml-3 flex min-w-0 flex-col sm:ml-4">
-                        <NekoTxt
+                        <NaviTxt
                           as="h1"
                           className="truncate text-base font-semibold uppercase tracking-[0.2em] text-cyan-200 sm:text-lg"
                           text="N e k o G P T"
