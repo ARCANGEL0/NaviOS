@@ -26,7 +26,7 @@ interface ChatInterfaceProps {
 }
 // configs and vars
 
- const API_BASE_URL = "https://api.arcangelo.net"
+const API_BASE_URL = "/api"
 const LOADING_LABEL = "L o a d i n g . . ."
 const DrkmodeWaitTxt = "Please wait"
 const DrkmodeLoadTxt = "Loading . . . ."

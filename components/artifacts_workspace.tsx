@@ -19,7 +19,7 @@ const ThreeDModelViewer = dynamic(
   { ssr: false }
 )
 
-const API_BASE_URL = "https://api.arcangelo.net"
+const API_BASE_URL = "/api"
 const ARTIFACTS_KEY = "NAVI_3D_ARTIFACTS_7E91C4A2_V1"
 const ACTIVE_ARTIFACT_KEY = "NAVI_3D_ACTIVE_39B6D0F5_V1"
 const MAX_IMAGE_BYTES = 32 * 1024 * 1024
