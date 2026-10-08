@@ -4,13 +4,14 @@ import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState }
 import Image from "next/image"
 import { createPortal } from "react-dom"
 import { Textarea } from "@/components/ui/textarea"
-import { ChevronLeft, ChevronRight, Copy, Download, Paperclip, Pencil, RotateCcw, Send, Square, Trash2, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, Copy, Download, FileText, Paperclip, Pencil, RotateCcw, Send, Square, Trash2, X } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useChatSess, type ChatMode } from "@/components/layout-wrapper"
 import { useChatStore } from "@/hooks/use-chat-store"
-import { Message, type MessageRevision } from "@/lib/chat-store"
+import { Message, type MessageRevision, type NaviFile } from "@/lib/chat-store"
 import { NaviBtn } from "@/components/navi_btn"
-import { FrameCorners, FrameLines, FrameNefrex, FrameUnderline, useBleeps } from "@/components/ui/navi_fx"
+import { FrameLines, FrameUnderline, useBleeps } from "@/components/ui/navi_fx"
+import { NaviBootLog } from "@/components/bootnav"
 import { NaviTxt } from "@/components/ui/navi_txt"
 import { SlowDecipherText } from "@/components/ui/decipher"
 import { AssistantMarkdown } from "@/components/ui/assistant-markdown"
@@ -30,12 +31,14 @@ const LOADING_LABEL = "L o a d i n g . . ."
 const DrkmodeWaitTxt = "Please wait"
 const DrkmodeLoadTxt = "Loading . . . ."
 const API_ENDPOINTS = {
-  neko: "/neko",
-  dark: "/neko_dark",
+  navi: "/navi",
+  dark: "/navi_dark",
   imagine: "/imagine",
   multiedit: "/multiEdit",
-  vision: "/neko_vision"
 } as const
+const UPLOAD_ENDPOINT = "/api/upload"
+const MAX_ATTACH_MB = 32
+const MAX_ATTACH_BYTES = MAX_ATTACH_MB * 1024 * 1024
 const DEBUG_REQUEST_LOGS = process.env.NODE_ENV !== "production"
 const PENDING_IMAGE_TASKS_KEY = "pending_image_tasks_v1"
 const drkPollMs = 2200
@@ -46,40 +49,42 @@ const IMAGE_TASK_POLL_MS = {
 
 const errByKind: Record<"api" | "img" | "vis", string[]> = {
   api: [
-    "[❌] ERROR\n> Sorry bud, an error ocurred trying to fetch my API. Try again, will ya?",
-    "[❌] ERROR\n> Error tryin' to fetch on my API. Give it one more shot, buddy.",
-    "[❌] ERROR\n> Could not reach my API right now. Retry again, bro",
-    "[❌] ERROR\n> Request crashed on the API side. Run it again.",
-    "[❌] ERROR\n> My backend is unresponsive, m8. Try again.",
-    "[❌] ERROR\n> Error from my side, it seems... Tap send again, yeah?",
-    "[❌] ERROR\n> Failed to fetch from API this round. Retry please.",
-    "[❌] ERROR\n> API timeout. Another try should do it.",
-    "[❌] ERROR\n> No clean response from API. Try again, chief.",
+    "[\u274c] LINK SEVERED\n> PROTOCOL 7 HANDSHAKE REFUSED BY NODE. REISSUE REQUEST.",
+    "[\u274c] NO CARRIER\n> THE WIRED RETURNED NOTHING. RESEND PACKET.",
+    "[\u274c] NODE UNREACHABLE\n> UPSTREAM HOST DID NOT ANSWER. RETRY TRANSMISSION.",
+    "[\u274c] TRANSMISSION LOST\n> REQUEST COLLAPSED IN TRANSIT. RESEND.",
+    "[\u274c] LAYER FAULT\n> BACKEND UNRESPONSIVE AT LAYER 07. RETRY.",
+    "[\u274c] CONNECTION RESET\n> SESSION DROPPED BEFORE RESPONSE. REISSUE.",
+    "[\u274c] RESOLVE FAILURE\n> NAVI COULD NOT RESOLVE THE ENDPOINT. RETRY.",
+    "[\u274c] TIMEOUT\n> NO REPLY WITHIN PROTOCOL WINDOW. RESEND.",
+    "[\u274c] MALFORMED REPLY\n> RESPONSE STREAM CORRUPTED. REQUEST AGAIN.",
   ], img: [
-    "[❌] ERROR\n> Image request failed on the server. Try again, will ya?",
-    "[❌] ERROR\n> Could not finish your image task. Give me another shot.",
-    "[❌] ERROR\n> Didn't got any image. Try regenerating again.",
-    "[❌] ERROR\n> No valid image result came back. Please retry.",
-    "[❌] ERROR\n> Image worker failed. Try again, bro.",
-    "[❌] ERROR\n> Render failed this time. Try sending again.",
-    "[❌] ERROR\n> Could not fetch image output. Retry please.",
-    "[❌] ERROR\n> Image API returned a bad response. Try again.",
-    "[❌] ERROR\n> Generation stalled on server side. Please try again.",
-    "[❌] ERROR\n> Didn't got anythin' from my backend. Try again, bro.",
+    "[\u274c] RENDER FAULT\n> IMAGE PROCESS TERMINATED ON HOST. REISSUE.",
+    "[\u274c] TASK ABORTED\n> IMAGE TASK DID NOT COMPLETE. RESEND REQUEST.",
+    "[\u274c] NO SIGNAL\n> NO IMAGE DATA RETURNED FROM THE WIRED. RETRY.",
+    "[\u274c] EMPTY BUFFER\n> IMAGE RESULT WAS NULL. REQUEST AGAIN.",
+    "[\u274c] WORKER OFFLINE\n> RENDER NODE IS DOWN. RETRY TRANSMISSION.",
+    "[\u274c] SYNTHESIS FAILED\n> FRAME COULD NOT BE SYNTHESIZED. RESEND.",
+    "[\u274c] OUTPUT LOST\n> COULD NOT RETRIEVE IMAGE STREAM. RETRY.",
+    "[\u274c] BAD RESPONSE\n> IMAGE ENDPOINT RETURNED INVALID DATA. REISSUE.",
+    "[\u274c] PROCESS STALLED\n> GENERATION HALTED UPSTREAM. RETRY.",
+    "[\u274c] NULL RETURN\n> BACKEND DELIVERED NO PAYLOAD. RESEND.",
   ],
   vis: [
-    "[❌] ERROR\n> Vision call failed on server side. Try again.",
-    "[❌] ERROR\n> Could not fetch vision output this time. Retry please.",
-    "[❌] ERROR\n> Might be blind, but my backend failed to view the image. Give it another go.",
-    "[❌] ERROR\n> Image analysis failed right now. Try again, bud.",
-    "[❌] ERROR\n> Vision API hit a snag. Retry again.",
-    "[❌] ERROR\n> No valid vision response received. Try again.",
-    "[❌] ERROR\n> The vision task crashed upstream. Please retry.",
-    "[❌] ERROR\n> Vision worker timed out. Another try should work.",
-    "[❌] ERROR\n> Could not parse vision result. Try sendin' me again.",
-    "[❌] ERROR\n> Vision fetch failed this round. Try again.",
+    "[\u274c] VISION FAULT\n> ANALYSIS PROCESS FAILED ON HOST. RETRY.",
+    "[\u274c] NO PERCEPT\n> VISION OUTPUT COULD NOT BE RETRIEVED. REISSUE.",
+    "[\u274c] OPTIC FAILURE\n> NAVI CANNOT RESOLVE THE IMAGE. RESEND.",
+    "[\u274c] SCAN ABORTED\n> IMAGE ANALYSIS TERMINATED. RETRY.",
+    "[\u274c] OPTIC LINK DOWN\n> VISION ENDPOINT REFUSED THE CALL. RETRY.",
+    "[\u274c] EMPTY PERCEPT\n> NO VISION DATA RECEIVED. REQUEST AGAIN.",
+    "[\u274c] PROCESS CRASHED\n> VISION TASK COLLAPSED UPSTREAM. RESEND.",
+    "[\u274c] TIMEOUT\n> OPTIC WORKER EXCEEDED PROTOCOL WINDOW. RETRY.",
+    "[\u274c] PARSE FAILURE\n> VISION RESULT UNREADABLE. REISSUE REQUEST.",
+    "[\u274c] NO RETURN\n> VISION FETCH YIELDED NOTHING. RETRY.",
   ],
 }
+
+type NaviType = "text" | "image" | "file"
 
 type NaviMsg = {
   role: "user" | "assistant"
@@ -122,7 +127,8 @@ const OK_IMAGE_MIME_TYPES = new Set([
 ])
 
 const aidBubbleStyle = {
-  "--arwes-frames-bg-color": "rgba(2, 21, 40, 0.82)",
+  "--arwes-frames-bg-color": "rgba(20, 8, 12, 0.84)",
+  "--arwes-frames-line-color": "rgba(234, 98, 130, 0.7)",
 } as CSSProperties
 
 const errBubbleStyle = {
@@ -133,24 +139,24 @@ const errBubbleStyle = {
 } as CSSProperties
 
 const aidActionStyle = {
-  "--arwes-frames-bg-color": "hsl(180 75% 10% / 0.58)",
-  "--arwes-frames-line-color": "hsl(188 80% 40% / 0.84)",
-  "--arwes-frames-deco-color": "hsl(184 100% 64% / 0.95)",
+  "--arwes-frames-bg-color": "hsl(340 55% 10% / 0.62)",
+  "--arwes-frames-line-color": "hsl(340 70% 55% / 0.84)",
+  "--arwes-frames-deco-color": "hsl(342 90% 70% / 0.95)",
 } as CSSProperties
 
 const toastFrameStyle = {
   "--arwes-frames-bg-color": "transparent",
-  "--arwes-frames-line-color": "rgba(109, 248, 255, 0.95)",
-  "--arwes-frames-deco-color": "rgba(190, 255, 255, 0.98)",
+  "--arwes-frames-line-color": "rgba(244, 167, 187, 0.95)",
+  "--arwes-frames-deco-color": "rgba(255, 214, 224, 0.98)",
   "--arwes-frames-bg-filter": "none",
-  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(0, 239, 255, 0.36))",
+  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(234, 98, 130, 0.4))",
 } as CSSProperties
 
 const usrBubbleStyle = {
-  "--arwes-frames-bg-color": "rgba(8, 75, 95, 0.42)",
-  "--arwes-frames-line-color": "rgba(133, 251, 255, 0.88)",
-  "--arwes-frames-bg-filter": "drop-shadow(0 0 8px rgba(28, 236, 255, 0.15))",
-  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(100, 246, 255, 0.26))",
+  "--arwes-frames-bg-color": "rgba(72, 14, 30, 0.44)",
+  "--arwes-frames-line-color": "rgba(244, 167, 187, 0.88)",
+  "--arwes-frames-bg-filter": "drop-shadow(0 0 8px rgba(234, 98, 130, 0.16))",
+  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(234, 98, 130, 0.28))",
 } as CSSProperties
 
 const aidBubbleStyleDark = {
@@ -175,10 +181,10 @@ const errBubbleStyleDark = {
 } as CSSProperties
 
 const actionCounterStyle = {
-  "--arwes-frames-bg-color": "rgba(5, 29, 40, 0.5)",
-  "--arwes-frames-line-color": "rgba(109, 248, 255, 0.78)",
-  "--arwes-frames-bg-filter": "drop-shadow(0 0 8px rgba(0, 230, 255, 0.14))",
-  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(104, 243, 255, 0.26))",
+  "--arwes-frames-bg-color": "rgba(40, 10, 20, 0.5)",
+  "--arwes-frames-line-color": "rgba(234, 98, 130, 0.78)",
+  "--arwes-frames-bg-filter": "drop-shadow(0 0 8px rgba(204, 51, 97, 0.14))",
+  "--arwes-frames-line-filter": "drop-shadow(0 0 10px rgba(234, 98, 130, 0.26))",
 } as CSSProperties
 
 const aidActionStyleDark = {
@@ -215,6 +221,24 @@ const okImgFile = (file: File): boolean => {
   }
 
   return /\.(png|jpe?g|gif|webp)$/i.test(file.name)
+}
+
+const stripGenBlocks = (text: string) =>
+  text
+    .replace(/<<<GENERATE::[\s\S]*?>>>/g, "")
+    .replace(/<<<GENERATE::[\s\S]*$/, "")
+    .replace(/\n{3,}/g, "\n\n")
+
+const fileExtOf = (name: string) => {
+  const dot = name.lastIndexOf(".")
+  return dot >= 0 ? name.slice(dot + 1) : "bin"
+}
+
+const fmtBytes = (size?: number) => {
+  if (!size || size <= 0) return "--"
+  if (size < 1024) return `${size} B`
+  if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`
 }
 
 const clampRevisionIndex = (message: Message, revisions: MessageRevision[]): number => {
@@ -286,6 +310,9 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
   const bleeps = useBleeps<"notify" | "assemble" | "content">()
   const [hasInput, setHasInput] = useState(false)
   const [attachments, setAttachments] = useState<File[]>([])
+  const [isDragging, setIsDragging] = useState(false)
+  const [genPendingId, setGenPendingId] = useState<string | null>(null)
+  const dragDepthRef = useRef(0)
   const [isEditPromptGlow, setIsEditPromptGlow] = useState(false)
   const [inFlightChatIds, setInFlightChatIds] = useState<Set<string>>(() => new Set())
   const [toastMessage, setToastMessage] = useState<string | null>(null)
@@ -294,7 +321,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
   const [isHistoryToastExiting, setIsHistoryToastExiting] = useState(false)
   const [isGalleryOpen, setIsGalleryOpen] = useState(false)
   const [activeGalleryIndex, setActiveGalleryIndex] = useState(0)
-  const maxFiles = chatMode === "image" ? 4 : chatMode === "dark" ? 0 : 1
+  const maxFiles = chatMode === "image" ? 4 : chatMode === "dark" ? 0 : 6
 
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
@@ -576,6 +603,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       role: "assistant",
       timestamp: new Date(),
       responseState,
+      files: chat.messages[loadingIndex].files,
     }
     updateChat(targetChatId, { messages: nextMessages })
     if (responseState === "error") {
@@ -1196,23 +1224,133 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     }
   }
 
-  const naviAI = async (
+  const upFile = async (file: File, signal: AbortSignal): Promise<string> => {
+    const response = await fetch(`${UPLOAD_ENDPOINT}?name=${encodeURIComponent(file.name)}`, {
+      method: "POST",
+      body: file,
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      signal,
+    })
+
+    const rawText = await response.text()
+    if (!response.ok) {
+      throw new Error(`Upload failed (${response.status}): ${rawText.slice(0, 180)}`)
+    }
+
+    const parsed = rtjson(rawText)
+    const url = parsed?.url
+    if (typeof url !== "string" || url.length === 0) {
+      throw new Error("Upload did not return a url.")
+    }
+
+    return url
+  }
+
+  const naviai = async (
     targetChatId: string,
     prompt: string,
     chatName: string,
     signal: AbortSignal,
-    excludedMessageIds?: Set<string>
+    attached: File[] = [],
+    excludedMessageIds?: Set<string>,
+    onDelta?: (full: string) => void,
+    onFiles?: (files: NaviFile[]) => void,
+    onGenPending?: () => void
   ): Promise<string> => {
-    const messages = naviMsgs(targetChatId, prompt, excludedMessageIds)
+    const conversation = naviMsgs(targetChatId, prompt, excludedMessageIds)
+    const allImages = attached.length > 0 && attached.every((file) => okImgFile(file))
+    const kind: NaviType = attached.length === 0 ? "text" : allImages ? "image" : "file"
+
+    const body: Record<string, unknown> = {
+      type: kind,
+      sessionId: targetChatId,
+      conversation,
+      stream: Boolean(onDelta),
+      generate_files: true,
+    }
+
+    if (attached.length > 0) {
+      const urls = await Promise.all(attached.map((file) => upFile(file, signal)))
+      if (kind === "image") {
+        body.images = urls
+      } else {
+        body.fileurls = urls
+      }
+    }
 
     const response = await reqJson(
-      API_ENDPOINTS.neko,
+      API_ENDPOINTS.navi,
       prompt,
       chatName,
-      { messages },
+      body,
       signal,
       targetChatId
     )
+
+    const isStream = (response.headers.get("content-type") || "").includes("text/event-stream")
+
+    if (isStream && response.body && onDelta) {
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffered = ""
+      let acc = ""
+      let final = ""
+      let flaggedGen = false
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffered += decoder.decode(value, { stream: true })
+        const frames = buffered.split("\n\n")
+        buffered = frames.pop() ?? ""
+
+        for (const frame of frames) {
+          const line = frame.split("\n").find((entry) => entry.startsWith("data:"))
+          if (!line) continue
+
+          const payload = line.slice(5).trim()
+          if (!payload || payload === "[DONE]") continue
+
+          let evt: Record<string, unknown> | null = null
+          try {
+            evt = JSON.parse(payload) as Record<string, unknown>
+          } catch {
+            continue
+          }
+
+          if (typeof evt.delta === "string") {
+            acc += evt.delta
+            if (!flaggedGen && acc.includes("<<<GENERATE::")) {
+              flaggedGen = true
+              onGenPending?.()
+            }
+            onDelta(stripGenBlocks(acc))
+            continue
+          }
+
+          if (evt.done) {
+            if (evt.status === false) {
+              throw new Error(String(evt.error || "Stream failed"))
+            }
+            if (Array.isArray(evt.files) && evt.files.length > 0) {
+              onFiles?.(evt.files as NaviFile[])
+            }
+            if (typeof evt.response === "string" && evt.response.trim().length > 0) {
+              final = evt.response
+            }
+          }
+        }
+      }
+
+      const out = final || stripGenBlocks(acc)
+      if (out.trim().length > 0) return out
+      throw new Error("No valid response content from API.")
+    }
 
     const rawText = await response.text()
 
@@ -1222,6 +1360,10 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
 
     const parsed = rtjson(rawText)
     if (parsed) {
+      if (Array.isArray(parsed.files) && parsed.files.length > 0) {
+        onFiles?.(parsed.files as NaviFile[])
+      }
+
       const candidate =
         parsed.response ??
         parsed.output ??
@@ -1239,49 +1381,6 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     }
 
     throw new Error("No valid response content from API.")
-  }
-
-  const req_vision = async (
-    targetChatId: string,
-    prompt: string,
-    imgB64: string,
-    chatName: string,
-    signal: AbortSignal
-  ): Promise<string> => {
-    const response = await reqJson(
-      API_ENDPOINTS.vision,
-      prompt,
-      chatName,
-      { prompt, image: imgB64 },
-      signal,
-      targetChatId
-    )
-
-    const rawText = await response.text()
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${rawText.slice(0, 220)}`)
-    }
-
-    const parsed = rtjson(rawText)
-    if (parsed) {
-      const vis_output =
-        (parsed as { image?: { output?: unknown } })?.image?.output ??
-        (parsed as { output?: unknown }).output ??
-        (parsed as { response?: unknown }).response ??
-        (parsed as { result?: { output?: unknown } }).result?.output
-
-      if (typeof vis_output === "string" && vis_output.trim().length > 0) {
-        return vis_output
-      }
-    }
-
-    const trimmed = rawText.trim()
-    if (trimmed.length > 0) {
-      return trimmed
-    }
-
-    throw new Error("No valid response content from vision API.")
   }
 
   const askAi = async (
@@ -1405,35 +1504,36 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
         return
       }
 
-      const imgFile = safeFiles[0]
-      const isVis = Boolean(imgFile)
-
-      if (!isVis) {
-        const responseText = await naviAI(
-          targetChatId,
-          prompt,
-          chatName,
-          ctrl.signal,
-          options?.excludedMessageIds
-        )
-
+      let streamStarted = false
+      const pushDelta = (full: string) => {
         if (!isReqTokenCurrent(targetChatId, reqTok)) return
-        repLoadAidMsg(
-          targetChatId,
-          loadMsgId,
-          responseText,
-          "ok"
-        )
-        return
+        if (!streamStarted) {
+          streamStarted = true
+          bleeps.content?.play("assistant-content")
+        }
+        updateMessage(targetChatId, loadMsgId, {
+          content: full,
+          responseState: "ok",
+        })
       }
 
-      const imgB64 = await toB64(imgFile, ctrl.signal)
-      const responseText = await req_vision(
+      const responseText = await naviai(
         targetChatId,
         prompt,
-        imgB64,
         chatName,
-        ctrl.signal
+        ctrl.signal,
+        safeFiles,
+        options?.excludedMessageIds,
+        pushDelta,
+        (files) => {
+          if (!isReqTokenCurrent(targetChatId, reqTok)) return
+          setGenPendingId(null)
+          updateMessage(targetChatId, loadMsgId, { files })
+        },
+        () => {
+          if (!isReqTokenCurrent(targetChatId, reqTok)) return
+          setGenPendingId(loadMsgId)
+        }
       )
 
       if (!isReqTokenCurrent(targetChatId, reqTok)) return
@@ -1470,6 +1570,8 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
         "error"
       )
     } finally {
+      setGenPendingId((current) => (current === loadMsgId ? null : current))
+
       if (!isReqTokenCurrent(targetChatId, reqTok)) {
         return
       }
@@ -1728,8 +1830,8 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     if (!prompt.trim()) return
     const filesIn = chatMode === "dark" ? [] : attachments.slice(0, maxFiles)
 
-    if (filesIn.some((file) => !okImgFile(file))) {
-      showToast("Only image files are supported")
+    if (chatMode === "image" && filesIn.some((file) => !okImgFile(file))) {
+      showToast("Image mode only accepts image files")
       setAttachments([])
       return
     }
@@ -2127,32 +2229,110 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
       return
     }
 
-    const files = Array.from(e.target.files)
-    const imgs = files.filter((file) => okImgFile(file))
+    const files = sizeOk(Array.from(e.target.files))
+    if (files.length === 0) {
+      e.target.value = ""
+      return
+    }
+    const picked = chatMode === "image" ? files.filter((file) => okImgFile(file)) : files
 
-    if (imgs.length === 0) {
+    if (picked.length === 0) {
       setAttachments([])
-      showToast("Only image files are supported")
+      showToast("Image mode only accepts image files")
       e.target.value = ""
       return
     }
 
-    if (imgs.length < files.length) {
-      showToast("Only image files are supported")
+    if (picked.length < files.length) {
+      showToast("Image mode only accepts image files")
     }
 
     const mergedFiles =
-      chatMode === "image" ? [...attachments, ...imgs] : imgs.slice(0, 1)
+      [...attachments, ...picked]
 
     if (mergedFiles.length > maxFiles) {
       showToast(
-        chatMode === "image" ? "Maximum four images allowed" : "Only one image can be uploaded"
+        chatMode === "image" ? "Maximum four images allowed" : `Maximum ${maxFiles} files allowed`
       )
     }
 
     setAttachments(mergedFiles.slice(0, maxFiles))
     setIsEditPromptGlow(false)
     e.target.value = ""
+  }
+
+  const sizeOk = (files: File[]): File[] => {
+    const tooBig = files.filter((file) => file.size > MAX_ATTACH_BYTES)
+    if (tooBig.length > 0) {
+      showToast(`Max file size permitted: ${MAX_ATTACH_MB}MB`)
+    }
+    return files.filter((file) => file.size <= MAX_ATTACH_BYTES)
+  }
+
+  const addDropped = (files: File[]) => {
+    if (files.length === 0) return
+    if (chatMode === "dark") {
+      showToast("Not available under DARK MODE.")
+      return
+    }
+    if (isRequestInFlight) {
+      showToast("Request in progress...")
+      return
+    }
+
+    const sized = sizeOk(files)
+    if (sized.length === 0) return
+
+    const picked = chatMode === "image" ? sized.filter((file) => okImgFile(file)) : sized
+    if (picked.length === 0) {
+      showToast("Image mode only accepts image files")
+      return
+    }
+
+    const mergedFiles =
+      [...attachments, ...picked]
+
+    if (mergedFiles.length > maxFiles) {
+      showToast(
+        chatMode === "image" ? "Maximum four images allowed" : `Maximum ${maxFiles} files allowed`
+      )
+    }
+
+    setAttachments(mergedFiles.slice(0, maxFiles))
+    setIsEditPromptGlow(false)
+  }
+
+  const hasFileDrag = (event: React.DragEvent) =>
+    Array.from(event.dataTransfer?.types ?? []).includes("Files")
+
+  const onDragEnter = (event: React.DragEvent) => {
+    if (!hasFileDrag(event)) return
+    event.preventDefault()
+    dragDepthRef.current += 1
+    setIsDragging(true)
+  }
+
+  const onDragOver = (event: React.DragEvent) => {
+    if (!hasFileDrag(event)) return
+    event.preventDefault()
+    event.dataTransfer.dropEffect = "copy"
+  }
+
+  const onDragLeave = (event: React.DragEvent) => {
+    if (!hasFileDrag(event)) return
+    event.preventDefault()
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+    if (dragDepthRef.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  const onDrop = (event: React.DragEvent) => {
+    if (!hasFileDrag(event)) return
+    event.preventDefault()
+    dragDepthRef.current = 0
+    setIsDragging(false)
+    addDropped(Array.from(event.dataTransfer.files ?? []))
   }
 
   const clearAttach = () => {
@@ -2316,12 +2496,46 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
 
   return (
     <TooltipProvider>
-      <div className="cybertxt flex h-full min-h-0 w-full flex-col overflow-hidden">
-        <div className="flex-1 min-h-0 overflow-hidden">
+      <div
+        className="cybertxt relative flex h-full min-h-0 w-full flex-col overflow-hidden"
+        onDragEnter={onDragEnter}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+      >
+        {isDragging && (
+          <div className="ndrop" role="presentation">
+            <div className="ndrop-wire" aria-hidden>
+              <span /><span /><span /><span /><span />
+            </div>
+            <div className="ndrop-card">
+              <div className="ndrop-bar">
+                <span className="ndrop-bar-id">[ 接続 // UPLINK ]</span>
+                <span className="ndrop-bar-sq" aria-hidden />
+              </div>
+              <div className="ndrop-body">
+                <span className="ndrop-jp" aria-hidden>ファイルをドロップ</span>
+                <span className="ndrop-title" data-text="DROP FILES HERE">DROP FILES HERE</span>
+                <span className="ndrop-rule" aria-hidden />
+                <span className="ndrop-sub">
+                  {chatMode === "image"
+                    ? `IMAGES ONLY \u00b7 MAX ${MAX_ATTACH_MB}MB`
+                    : `ANY FORMAT \u00b7 MAX ${MAX_ATTACH_MB}MB`}
+                </span>
+              </div>
+              <span className="ndrop-corner" data-c="tl" aria-hidden />
+              <span className="ndrop-corner" data-c="tr" aria-hidden />
+              <span className="ndrop-corner" data-c="bl" aria-hidden />
+              <span className="ndrop-corner" data-c="br" aria-hidden />
+            </div>
+          </div>
+        )}
+        <div className="relative flex-1 min-h-0 overflow-hidden">
+          <NaviBootLog />
           <div
             ref={viewRef}
             onScroll={onViewportScroll}
-            className="h-full overflow-y-auto px-3 py-4 sm:px-4 md:px-6"
+            className="relative z-[1] h-full overflow-y-auto px-3 py-4 sm:px-4 md:px-6"
           >
             <div className="mx-auto w-full max-w-4xl space-y-4 pb-4">
               {messages.map((message) => {
@@ -2364,24 +2578,17 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                   >
                     <div className="w-full max-w-[92%] sm:max-w-[82%] md:max-w-[72%]">
                       <div
-                        className={`${bubbleClass} relative p-4 ${
-                          isUserMessage
-                            ? "border border-cyan-300/50"
-                            : isErrAid
-                              ? "border border-red-400/60 shadow-[0_0_18px_rgba(255,82,82,0.28)]"
-                              : "border border-cyan-500/35"
-                        }`}
+                        className={`${bubbleClass} nmsg relative`}
+                        data-role={isUserMessage ? "user" : isErrAid ? "alert" : "navi"}
                       >
-                          <FrameNefrex
-                            {...navi_panel_1}
-                            style={bubbleStyle}
-                            className="pointer-events-none absolute inset-0 z-[1]"
-                          />
-                        <div
-                          className={`chat-bubble-text relative z-[2] ${
-                            isUserMessage ? "text-cyan-50" : "text-cyan-100"
-                          }`}
-                        >
+                        <div className="nmsg-head">
+                          <span className="nmsg-tag">
+                            {isUserMessage ? "USER" : isErrAid ? "SYSTEM ALERT" : "NAVI"}
+                          </span>
+                          <span className="nmsg-rule" aria-hidden />
+                          <span className="nmsg-time">{fmtMsgTime(message.timestamp)}</span>
+                        </div>
+                        <div className="nmsg-body chat-bubble-text relative z-[2]">
                           {isLoadAid ? (
                             <p className="relative z-[2] text-decipher loadingtxt text-cyan-200">
                               {isDrkWait ? (
@@ -2437,21 +2644,6 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                               />
                             </div>
                           )}
-                          <div
-                            className={`pointer-events-none mt-4 flex ${
-                              isUserMessage ? "justify-end" : "justify-start"
-                            } z-[3]`}
-                          >
-                            <span
-                              className={`chat-timestamp ${
-                                isUserMessage
-                                  ? "chat-timestamp-user"
-                                  : "chat-timestamp-assistant"
-                              }`}
-                            >
-                              {fmtMsgTime(message.timestamp)}
-                            </span>
-                          </div>
                         </div>
                       </div>
 
@@ -2459,14 +2651,9 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                         <div className="mt-2 flex justify-end gap-2">
                           <button
                             type="button"
-                            className="chat-action-btn relative inline-flex h-8 items-center gap-2 px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-300 transition-colors hover:text-cyan-100"
+                            className="nbtn chat-action-btn h-7 px-3"
                             onClick={() => handleCopy(message.content)}
                           >
-                            <FrameCorners
-                              style={actionFrameStyle}
-                              className="pointer-events-none absolute inset-0"
-                              padding={1}
-                            />
                             <Copy className="relative z-[2] h-3.5 w-3.5" />
                             <NaviTxt
                               as="span"
@@ -2478,19 +2665,76 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                         </div>
                       )}
 
+                      {message.role === "assistant" && genPendingId === message.id && (
+                        <div className="nfiles nfiles-pending">
+                          <div className="nfiles-bar">
+                            <span className="nfiles-id">[ 出力 // ARTIFACTS ]</span>
+                            <span className="nfiles-count">··</span>
+                          </div>
+                          <div className="nfiles-body">
+                            <div className="nfiles-row">
+                              <span className="nfiles-icon" aria-hidden>
+                                <FileText className="h-4 w-4" />
+                                <b>···</b>
+                              </span>
+                              <span className="nfiles-meta">
+                                <span className="nfiles-name">
+                                  <SlowDecipherText text="RETRIEVING ARTIFACT" trigger={message.id} durationMs={1400} loop />
+                                </span>
+                                <span className="nfiles-size">UPLOADING TO HOST</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {message.role === "assistant" && !isLoadAid && (message.files?.length ?? 0) > 0 && (
+                        <div className="nfiles">
+                          <div className="nfiles-bar">
+                            <span className="nfiles-id">[ 出力 // ARTIFACTS ]</span>
+                            <span className="nfiles-count">{message.files?.length}</span>
+                          </div>
+                          <div className="nfiles-body">
+                            {message.files?.map((file, fileIndex) => (
+                              <div className="nfiles-row" key={`${message.id}-file-${fileIndex}`} data-bad={Boolean(file.error)}>
+                                <span className="nfiles-icon" aria-hidden>
+                                  <FileText className="h-4 w-4" />
+                                  <b>{(file.type || fileExtOf(file.name)).toUpperCase()}</b>
+                                </span>
+                                <span className="nfiles-meta">
+                                  <span className="nfiles-name" title={file.name}>{file.name}</span>
+                                  <span className="nfiles-size">
+                                    {file.error ? `GENERATION FAILED — ${file.error}` : fmtBytes(file.size)}
+                                  </span>
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {message.role === "assistant" && !isLoadAid && (
-                        <div className="mt-2 flex flex-wrap gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {message.files?.filter((file) => !file.error).map((file, fileIndex) => (
+                            <a
+                              key={`${message.id}-dl-${fileIndex}`}
+                              className="nbtn chat-action-btn h-7 px-3"
+                              href={file.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              download={file.name}
+                              title={file.name}
+                            >
+                              <Download className="h-3.5 w-3.5" />
+                              {(message.files?.filter((f) => !f.error).length ?? 0) > 1 ? file.name : "Download"}
+                            </a>
+                          ))}
                           {showImageActions ? (
                             <button
                               type="button"
-                              className="chat-action-btn relative inline-flex h-8 items-center gap-2 px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-300 transition-colors hover:text-cyan-100"
+                              className="nbtn chat-action-btn h-7 px-3"
                               onClick={() => dlImg(inlineImgs[0])}
                             >
-                              <FrameCorners
-                                style={actionFrameStyle}
-                                className="pointer-events-none absolute inset-0"
-                                padding={1}
-                              />
                               <Download className="relative z-[2] h-3.5 w-3.5" />
                               <NaviTxt
                                 as="span"
@@ -2502,14 +2746,9 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           ) : canCopyText ? (
                             <button
                               type="button"
-                              className="chat-action-btn relative inline-flex h-8 items-center gap-2 px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-300 transition-colors hover:text-cyan-100"
+                              className="nbtn chat-action-btn h-7 px-3"
                               onClick={() => handleCopy(message.content)}
                             >
-                              <FrameCorners
-                                style={actionFrameStyle}
-                                className="pointer-events-none absolute inset-0"
-                                padding={1}
-                              />
                               <Copy className="relative z-[2] h-3.5 w-3.5" />
                               <NaviTxt
                                 as="span"
@@ -2522,15 +2761,10 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           
                           <button
                             type="button"
-                            className="chat-action-btn relative inline-flex h-8 items-center gap-2 px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-300 transition-colors hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                            className="nbtn chat-action-btn h-7 px-3"
                             onClick={() => regenMsg(message.id)}
                             disabled={isRequestInFlight || message.id !== lastAidId}
                           >
-                            <FrameCorners
-                              style={actionFrameStyle}
-                              className="pointer-events-none absolute inset-0"
-                              padding={1}
-                            />
                             <RotateCcw className="relative z-[2] h-3.5 w-3.5" />
                             <NaviTxt
                               as="span"
@@ -2543,15 +2777,10 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                           {showImageActions && (
                             <button
                               type="button"
-                              className="chat-action-btn relative inline-flex h-8 items-center gap-2 px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-300 transition-colors hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-45"
+                              className="nbtn chat-action-btn h-7 px-3"
                               onClick={() => editImg(inlineImgs[0])}
                               disabled={isRequestInFlight}
                             >
-                              <FrameCorners
-                                style={actionFrameStyle}
-                                className="pointer-events-none absolute inset-0"
-                                padding={1}
-                              />
                               <Pencil className="relative z-[2] h-3.5 w-3.5" />
                               <NaviTxt
                                 as="span"
@@ -2566,38 +2795,23 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                             <div className="flex items-center gap-1.5">
                               <button
                                 type="button"
-                                className="chat-action-btn chat-action-nav relative inline-flex h-8 w-8 items-center justify-center text-cyan-300 transition-colors hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="nbtn nbtn--sq chat-action-btn chat-action-nav"
                                 onClick={() => navigateMsgRevision(chatId, message.id, "prev")}
                                 disabled={activeRevisionIndex === 0}
                                 aria-label="Previous generation"
                               >
-                                <FrameCorners
-                                  style={counterFrameStyle}
-                                  className="pointer-events-none absolute inset-0"
-                                  padding={1}
-                                />
                                 <ChevronLeft className="relative z-[2] h-3.5 w-3.5" />
                               </button>
-                              <div className="relative inline-flex h-8 min-w-[56px] items-center justify-center px-3 text-[11px] uppercase tracking-[0.16em] text-cyan-200">
-                                <FrameCorners
-                                  style={counterFrameStyle}
-                                  className="pointer-events-none absolute inset-0"
-                                  padding={1}
-                                />
+                              <div className="nbtn chat-action-counter-box h-7 min-w-[56px] px-3">
                                 <span className="chat-action-counter relative z-[2]">{activeRevisionIndex + 1}/{revisionCount}</span>
                               </div>
                               <button
                                 type="button"
-                                className="chat-action-btn chat-action-nav relative inline-flex h-8 w-8 items-center justify-center text-cyan-300 transition-colors hover:text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                className="nbtn nbtn--sq chat-action-btn chat-action-nav"
                                 onClick={() => navigateMsgRevision(chatId, message.id, "next")}
                                 disabled={activeRevisionIndex >= revisionCount - 1}
                                 aria-label="Next generation"
                               >
-                                <FrameCorners
-                                  style={counterFrameStyle}
-                                  className="pointer-events-none absolute inset-0"
-                                  padding={1}
-                                />
                                 <ChevronRight className="relative z-[2] h-3.5 w-3.5" />
                               </button>
                             </div>
@@ -2627,7 +2841,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                   chatMode === "image"
                     ? "Describe your image request..."
                     : chatMode === "dark"
-                      ? "[DARK NEKO :: No censorship active] Type your message..."
+                      ? "[DARK NAVI :: layer 07 :: no censorship] Type your message..."
                     : "Type your message here..."
                 }
                 className={`chatboxshell relative z-[2] min-h-[92px] resize-none bg-transparent pr-24 text-cyan-100 placeholder-cyan-400/50 ${
@@ -2639,7 +2853,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                   ref={fileInputRef}
                   type="file"
                   multiple={chatMode === "image"}
-                  accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                  accept={chatMode === "image" ? "image/png,image/jpeg,image/jpg,image/gif,image/webp" : undefined}
                   onChange={onFilePick}
                   disabled={chatMode === "dark"}
                   className="hidden"
@@ -2734,7 +2948,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
               <div className="mt-2 flex items-center gap-2 text-sm text-cyan-300">
                 <NaviTxt
                   as="span"
-                  text={`${attachments.length} image${attachments.length > 1 ? "s" : ""} attached${chatMode === "image" ? ` (${attachments.length}/4)` : ""}`}
+                  text={`${attachments.length} ${chatMode === "image" ? "image" : "file"}${attachments.length > 1 ? "s" : ""} attached (${attachments.length}/${maxFiles})`}
                   trigger={`attachments-${attachments.length}-${chatMode}`}
                 />
                 <NaviBtn

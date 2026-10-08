@@ -1,6 +1,14 @@
 /// chat db storage 
 
 
+export interface NaviFile {
+  name: string
+  url: string
+  type?: string
+  size?: number
+  error?: string
+}
+
 export interface Message {
   id: string
   content: string
@@ -11,6 +19,7 @@ export interface Message {
   revisions?: MessageRevision[]
   activeRevision?: number
   cachedImages?: Record<string, string>
+  files?: NaviFile[]
 }
 
 export interface MessageRevision {
