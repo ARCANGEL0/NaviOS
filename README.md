@@ -1,70 +1,50 @@
 <div align="center">
-  <img src="./public/cat.gif" alt="Neko Chat" width="220" />
+  <img src="./public/darkwired.png" alt="Darkwired symbol" width="128" />
 
-# ᗢ Neko GPT
-
-A cyberpunk styled web chat interface powered by **NEKO API** for:
-**chat completions**, **image generation**, **vision analysis**, and **image editing (up to 4 images)** using the **latest Seedance model**.
-
-<p>
-  <a href="https://github.com/ARCANGEL0/NekoGPT/stargazers"><img src="https://img.shields.io/github/stars/ARCANGEL0/NekoGPT?style=for-the-badge&label=stars&color=00dcdc&labelColor=00acac" alt="stars" /></a>
-  <a href="https://github.com/ARCANGEL0/NekoGPT/watchers"><img src="https://img.shields.io/github/watchers/ARCANGEL0/NekoGPT?style=for-the-badge&label=watchers&color=00dcdc&labelColor=00acac" alt="watchers" /></a>
-  <a href="https://github.com/ARCANGEL0/NekoGPT/network/members"><img src="https://img.shields.io/github/forks/ARCANGEL0/NekoGPT?style=for-the-badge&label=forks&color=00dcdc&labelColor=00acac" alt="forks" /></a>
-  <a href="https://github.com/ARCANGEL0/NekoGPT/issues"><img src="https://img.shields.io/github/issues/ARCANGEL0/NekoGPT?style=for-the-badge&label=issues&color=00dcdc&labelColor=00acac" alt="issues" /></a>
-</p>
-
-[![Checkout the command-line version to be used on terminal directly! :> NekoCLI!](https://img.shields.io/badge/%F0%9F%90%88_Checkout%20the%20command_line%20version%20to%20be%20used%20on%20terminal%20directly!:%3E%20NekoCLI!-cyan.svg?style=for-the-badge)](https://github.com/ARCANGEL0/NekoCLI)
-
+  <h1>NAVI</h1>
+  <p><strong>PRESENT DAY // PRESENT TIME</strong></p>
+  <p>A Serial Experiments Lain-inspired cyberpunk workspace for AI chat, image creation, and interactive 3D.</p>
 </div>
 
 ---
 
-# About
-- Text completions chat with Neko API using realtime data.
-- Image generation using latest seedance models.
-- Vision analysis when an image is attached in chat mode.
-- Multi-image editing workflow (up to 4 images) in image mode.
-- Session-based chat history saved in browser.
+NAVI brings conversation and creative tools together in a terminal-like interface for the Wired.
 
-## ⚡ Neko Modes
-| Mode | Behavior |
-|---|---|
-| `CHAT` | Text conversation + optional single-image vision prompt |
-| `IMAGE` | Prompt image generation or image edit with up to 4 files |
+## Modes
 
-## ⛃ Tech Stack
-- Next.js 15 + React 19 + TypeScript
-- Tailwind CSS + shadcn/ui + Radix UI
-- Cyberpunk styling using the Neko UI layer
+| Mode | What it does |
+| --- | --- |
+| **CHAT** | Stream conversations, keep browser-saved sessions, and attach an image for visual analysis. |
+| **IMAGE** | Generate images or edit a composition using up to four reference images. |
+| **3D** | Generate a model from text or an image, then inspect and manipulate it in the browser. Supports GLB, FBX, and OBJ previews. |
 
-## ➤_ Quick Start
+Generated 3D artifacts are cached in the browser with IndexedDB for later local access.
+
+## Built With
+
+Next.js 15, React 19, TypeScript, Tailwind CSS, Radix UI, and Three.js. Cloudflare Workers deployment is configured through OpenNext.
+
+## Run Locally
+
+**Requirements:** Node.js 20.19 or newer and pnpm.
+
 ```bash
-git clone https://github.com/ARCANGEL0/NekoGPT.git
-cd NekoGPT
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. The app's `/api` route forwards chat, image, and 3D requests to `api.arcangelo.net`, which must be reachable for generation features.
 
-## ⧖ Build
-```bash
-npm run build
-npm start
-npm run lint
-```
+## Project Layout
 
-## ⮼ Project Structure
 ```text
-app/                  # app routes + API handlers
-components/           # main UI modules for neko chat
-components/ui/        # reusable UI comps
-hooks/                # state hooks and others
-lib/                  # store and utility logic for cchat wrapper
-public/               # static assets (gifs, imgs, sounds)
+app/                  Next.js app and unified API route
+components/           Chat, image, and 3D workspaces
+components/ui/        Shared interface components
+hooks/                Application hooks
+lib/                  Browser storage and utilities
+public/               Static assets and Darkwired mark
 ```
-
----
 
 <div align="center">
 
