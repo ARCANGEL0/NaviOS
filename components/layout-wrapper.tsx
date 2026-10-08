@@ -4,18 +4,15 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { useChatStore } from "@/hooks/use-chat-store"
-import { Animator, FrameLines, FrameHeader } from "@/components/ui/navi_fx"
-import { NaviBtn } from "@/components/navi_btn"
-import { Bug, BugOff, ImagePlus, PenLine } from "lucide-react"
+import { Animator } from "@/components/ui/navi_fx"
 import { useNaviUi } from "@/components/navi_ui"
-import { NaviTxt } from "@/components/ui/navi_txt"
-import { SlowDecipherText } from "@/components/ui/decipher"
+import modeStyles from "@/components/artifacts_workspace.module.css"
 
 interface LayoutWrapperProps {
   children: React.ReactNode
 }
 
-export type ChatMode = "chat" | "image" | "dark"
+export type ChatMode = "chat" | "image" | "3d" | "dark"
 
 interface ChatSessCtx {
   curChatId?: string
@@ -45,11 +42,43 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const [curChatId, setCurChatId] = useState<string | undefined>()
   const [chatMode, setChatMode] = useState<ChatMode>("chat")
   const [darkChatId, setDarkChatId] = useState<string | undefined>()
+  const [threeDHasUnread, setThreeDHasUnread] = useState(false)
+  const [clock, setClock] = useState("--:--:--")
+  const [nodeId, setNodeId] = useState("--")
   const prevAnimOnRef = useRef(animOn)
   const prevModeRef = useRef<Exclude<ChatMode, "dark">>("chat")
   const prevChatIdRef = useRef<string | undefined>(undefined)
   const modeLabel =
-    chatMode === "dark" ? "DARK MODE" : chatMode === "chat" ? "CHAT MODE" : "IMAGE MODE"
+    chatMode === "dark"
+      ? "DARK MODE"
+      : chatMode === "3d"
+        ? "3D WORKSPACE"
+        : chatMode === "image"
+          ? "IMAGE MODE"
+          : "CHAT MODE"
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date()
+      const pad = (n: number) => String(n).padStart(2, "0")
+      setClock(`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`)
+    }
+    tick()
+    const id = window.setInterval(tick, 1000)
+    return () => window.clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const on3DArtifactReady = () => {
+      if (chatMode !== "3d") setThreeDHasUnread(true)
+    }
+    window.addEventListener("navi:3d-artifact-ready", on3DArtifactReady)
+    return () => window.removeEventListener("navi:3d-artifact-ready", on3DArtifactReady)
+  }, [chatMode])
+
+  useEffect(() => {
+    setNodeId(String(Math.floor(Math.random() * 60) + 2).padStart(2, "0"))
+  }, [])
 
   const newChat = useCallback(() => {
     const newChat = getOrNew()
@@ -112,7 +141,7 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
       return
     }
 
-    prevModeRef.current = chatMode === "image" ? "image" : "chat"
+    prevModeRef.current = chatMode === "image" ? "image" : chatMode === "3d" ? "3d" : "chat"
     prevChatIdRef.current = curChatId
     const nextDarkChat = createTemporaryChat()
     setDarkChatId(nextDarkChat.id)
@@ -193,102 +222,106 @@ export function LayoutWrapper({ children }: LayoutWrapperProps) {
           <div className="flex h-dvh w-full overflow-hidden">
             <AppSidebar
               curChatId={curChatId}
-              chatMode={chatMode}
+              chatMode={chatMode === "3d" ? "chat" : chatMode}
               darkChatId={darkChatId}
               onChatSelect={pickChat}
               onNewChat={newChat}
             />
 
-            <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-              <header className="relative z-10 h-14 shrink-0 border-b border-cyan-500/20 bg-transparent">
-                <Animator active duration={{ enter: 0.3, exit: 0.2, stagger: 0.02 }}>
-                  <div className="relative flex h-full w-full items-center px-3 sm:px-4">
-                    <FrameHeader
-                      className="pointer-events-none absolute inset-0 z-0 text-cyan-300/30"
-                      padding={1}
-                      contentLength={460}
-                      decoWidth={5}
-                    />
-                    <div className="relative z-10 flex min-w-0 flex-1 items-center">
-                      <div className="flex flex-1 items-center gap-3 ">
-                      <SidebarTrigger className="text-cyan-400 hover:text-cyan-300 mr-0" />
-                        <NaviBtn
-                          id="anim-toggle"
-                          frame="octagon"
-                          aria-label={animOn ? "Disable animations" : "Enable animations"}
-                          title={animOn ? "Disable animations" : "Enable animations"}
-                          onClick={toggleAnim}
-                          className={`octbtn ml-2 h-8 w-8 min-h-0 p-0 sm:ml-6 ${
-                            animOn
-                              ? "oct-send"
-                              : "oct-stop"
-                          }`}
-                        >
-                          {animOn ? (
-                            <BugOff className="h-4 w-4" />
-                          ) : (
-                            <Bug className="h-4 w-4" />
-                          )}
-                        </NaviBtn>
-                      <div className="ml-3 flex min-w-0 flex-col sm:ml-4">
-                        <NaviTxt
-                          as="h1"
-                          className="truncate text-base font-semibold uppercase tracking-[0.2em] text-cyan-200 sm:text-lg"
-                          text="N e k o G P T"
-                          trigger="layout-title"
-                        />
-                        <div className="modestatus">
-                          <span className="status-span" data-mode={chatMode}>
-                            <SlowDecipherText
-                              text={modeLabel}
-                              trigger={chatMode}
-                              durationMs={780}
-                              stepMs={34}
-                            />
-                          </span>
-                        </div>
-                      </div>
-                      {chatMode !== "dark" && (
-                        <div className="ml-auto flex items-center gap-1 sm:ml-4 sm:gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setChatMode("chat")}
-                            aria-label="Chat mode"
-                            title="Chat mode"
-                            className={`modetog relative flex h-8 w-8 shrink-0 items-center justify-center px-0 sm:h-9 sm:w-10 ${
-                              chatMode === "chat" ? "togon" : "togoff"
-                            }`}
-                          >
-                            <FrameLines
-                              className="togframe pointer-events-none absolute inset-0"
-                              padding={1}
-                            />
-                            <PenLine className="relative z-10 h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setChatMode("image")}
-                            aria-label="Image mode"
-                            title="Image mode"
-                            className={`modetog relative flex h-8 w-8 shrink-0 items-center justify-center px-0 transition-colors sm:h-9 sm:w-10 ${
-                              chatMode === "image" ? "togon" : "togoff"
-                            }`}
-                          >
-                            <FrameLines
-                              className="togframe pointer-events-none absolute inset-0"
-                              padding={1}
-                            />
-                            <ImagePlus className="relative z-10 h-4 w-4" />
-                          </button>
-                        </div>
-                      )}
-                     
-                    </div>
-                  </div>
-                          </div>
-                </Animator>
-              </header>
-              <section className="relative z-[2] flex-1 min-h-0 overflow-hidden">{children}</section>
+            <main className="navios relative flex min-w-0 flex-1 flex-col overflow-hidden">
+              <div className="nwin relative z-[2] m-2 flex-1 min-h-0">
+                <div className="nwin-bar">
+                  <span className="nwin-label" data-bad={!animOn}>
+                    {animOn ? "[ COMMUNICATION CONSOLE ]" : "[ KNIGHTS//ROOT :: THE WIRED IS OPEN ]"}
+                  </span>
+                  <span className="nwin-grip" aria-hidden />
+                  <span className="status-span nwin-label" data-mode={chatMode}>
+                    {modeLabel}
+                  </span>
+                  <span className="nwin-ctrls">
+                    <span className="nwin-sq" aria-hidden />
+                    <span className="nwin-sq" aria-hidden />
+                    <span className="nwin-sq" data-x="true" aria-hidden />
+                  </span>
+                </div>
+
+              <div className={"nmenu relative z-10 shrink-0 " + modeStyles.modeNav}>
+                <SidebarTrigger className="nmenu-trig" />
+                <span className="nmenu-brand">ナビ NAVI</span>
+                <button
+                  type="button"
+                  className="nmenu-item"
+                  data-on={chatMode === "chat"}
+                  onClick={() => setChatMode("chat")}
+                  disabled={chatMode === "dark"}
+                >
+                  CHAT
+                </button>
+                <button
+                  type="button"
+                  className="nmenu-item"
+                  data-on={chatMode === "image"}
+                  onClick={() => setChatMode("image")}
+                  disabled={chatMode === "dark"}
+                >
+                  IMAGE
+                </button>
+                <button
+                  type="button"
+                  className="nmenu-item"
+                  data-on={chatMode === "3d"}
+                  onClick={() => {
+                    setThreeDHasUnread(false)
+                    setChatMode("3d")
+                  }}
+                  disabled={chatMode === "dark"}
+                  aria-label={threeDHasUnread ? "3D workspace, model ready" : "3D workspace"}
+                >
+                  3D
+                  {threeDHasUnread && <span className={modeStyles.modeUnreadDot} aria-hidden />}
+                </button>
+                <button
+                  type="button"
+                  className="nmenu-item nmenu-corrupt"
+                  data-on={!animOn}
+                  onClick={toggleAnim}
+                  title={animOn ? "Open layer 07" : "Close layer 07"}
+                >
+                  {animOn ? "CORRUPTED: OFF" : "CORRUPTED: ON"}
+                </button>
+                <span className="nmenu-spacer" />
+              </div>
+
+                <div className="nwin-body">
+                  <section className="relative z-[2] flex-1 min-h-0 overflow-hidden">{children}</section>
+                </div>
+              </div>
+
+              <div className="nstat relative z-10 shrink-0" data-bad={!animOn}>
+                <span className="nstat-cell nstat-link">
+                  {animOn ? (
+                    <span className="nstat-dot" aria-hidden />
+                  ) : (
+                    <span className="nstat-x" aria-hidden>&#10005;</span>
+                  )}
+                  <i>LINK</i>
+                  <b>{animOn ? "OK" : "COMPROMISED"}</b>
+                </span>
+                <span className="nstat-cell"><i>USER</i><b>{animOn ? "\u30ec\u30a4\u30f3" : "\u30c0\u30fc\u30af\u30ef\u30a4\u30e4\u30fc\u30c9"}</b></span>
+                <span className="nstat-cell"><i>NODE</i><b>{animOn ? nodeId : "INACTIVE"}</b></span>
+                <span className="nstat-cell nstat-jp"><i>LANG</i><b>&#26085;&#26412;&#35486;</b></span>
+                <span className="nstat-cell"><i>{animOn ? "PROTO" : "PROTOCOL"}</i><b>{animOn ? "02" : "7"}</b></span>
+                <span className="nstat-cell nstat-sig nstat-hide-sm">
+                  <i>SIGNAL</i>
+                  <span className="nstat-bars" aria-hidden>
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <span key={i} data-off={!animOn && i > 1} />
+                    ))}
+                  </span>
+                </span>
+                <span className="nstat-spacer" />
+                <span className="nstat-cell nstat-clock"><b>{clock}</b></span>
+              </div>
             </main>
           </div>
         </Animator>
