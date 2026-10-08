@@ -1,25 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Chakra_Petch, Share_Tech_Mono, VT323 } from "next/font/google";
 import "./globals.css";
 import { LayoutWrapper } from "@/components/layout-wrapper";
 import { NaviUiProvider } from "@/components/navi_ui";
 
-const geistSans = Geist({
+const sans = Chakra_Petch({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
+const mono = Share_Tech_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  weight: "400",
+});
+
+const crt = VT323({
+  variable: "--font-crt",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
-  title: "N e k o . GPT",
-  description: "Cyberpunk-styled chat interface with N e k o AI, with resources such as text completions, vision, image generation and editing.",
+  title: "Navi",
+  description: "Present day, present time. Navi terminal for the Wired - chat, vision, image synthesis and edits.",
   icons: {
-    icon: "/cat.gif",
-    shortcut: "/cat.gif",
+    icon: "/darkwired.png",
+    shortcut: "/darkwired.png",
   },
 };
 
@@ -31,11 +39,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bodyfx`}
+        className={`${sans.variable} ${mono.variable} ${crt.variable} antialiased bodyfx`}
       >
         <NaviUiProvider>
           <div className="appwrap">
-            <div className="scanline" />
             <LayoutWrapper>{children}</LayoutWrapper>
           </div>
         </NaviUiProvider>
