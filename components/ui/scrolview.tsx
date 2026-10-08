@@ -2,9 +2,7 @@
 
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-import { FrameBase } from "@/components/ui/navi_fx"
 
-import { navi_field_1 } from "@/components/ui/frames"
 import { cn } from "@/lib/utils"
 
 function ScrollArea({
@@ -18,10 +16,6 @@ function ScrollArea({
       className={cn("relative overflow-hidden", className)}
       {...props}
     >
-      <FrameBase
-        settings={navi_field_1}
-        className="navi_field pointer-events-none"
-      />
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
         className="focus-visible:ring-ring/50 relative z-[2] size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/75"
@@ -55,7 +49,7 @@ function ScrollBar({
     >
       <ScrollAreaPrimitive.ScrollAreaThumb
         data-slot="scroll-area-thumb"
-        className="relative flex-1 rounded-full bg-cyan-400/45 shadow-[0_0_8px_rgba(0,237,255,0.25)]"
+        className="relative flex-1 rounded-full nsb-thumb"
       />
     </ScrollAreaPrimitive.ScrollAreaScrollbar>
   )

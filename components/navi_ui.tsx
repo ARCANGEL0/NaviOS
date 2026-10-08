@@ -208,11 +208,11 @@ export function NaviUiProvider({ children }: UiProviderProps) {
   )
 
   const gridLineColor = animOn
-    ? "rgba(23, 233, 255, 0.14)"
-    : "rgba(255, 52, 90, 0.18)"
+    ? "rgba(234, 98, 130, 0.14)"
+    : "rgba(255, 42, 109, 0.2)"
   const movingLineColor = animOn
-    ? "rgba(0, 215, 255, 0.08)"
-    : "rgba(255, 52, 90, 0.12)"
+    ? "rgba(204, 51, 97, 0.09)"
+    : "rgba(255, 42, 109, 0.14)"
 
   return (
     <UiCtx.Provider value={ctxVal}>

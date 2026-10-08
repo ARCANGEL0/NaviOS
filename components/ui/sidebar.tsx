@@ -4,14 +4,9 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
-import { FrameUnderline, FrameOctagon } from "@/components/ui/navi_fx"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
-import {
-  navi_under_1,
-  navi_panel_1,
-} from "@/components/ui/frames"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -239,12 +234,8 @@ function Sidebar({
         <div
           data-sidebar="sidebar"
           data-slot="sidebar-inner"
-          className="panelbox navi_bvl bg-sidebar group-data-[variant=floating]:border-sidebar-border relative flex h-full w-full flex-col overflow-hidden group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border relative flex h-full w-full flex-col overflow-hidden group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
-          <FrameUnderline
-            {...navi_panel_1}
-            className="maincard-frame pointer-events-none"
-          />
           <div className="relative z-[2] flex h-full w-full flex-col">{children}</div>
         </div>
       </div>
@@ -264,25 +255,14 @@ function SidebarTrigger({
       type="button"
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
-      className={cn(
-        "octrig relative inline-flex size-8 items-center justify-center overflow-hidden text-cyan-300/90 transition-[color,transform,filter] duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/80 hover:text-cyan-100  active:translate-y-px",
-        "[--arwes-frames-bg-color:rgba(5,28,47,0.46)] [--arwes-frames-line-color:rgba(65,240,255,0.74)] [--arwes-frames-bg-filter:drop-shadow(0_0_8px_rgba(0,220,255,0.14))] [--arwes-frames-line-filter:drop-shadow(0_0_10px_rgba(0,235,255,0.28))]",
-        " hover:[--arwes-frames-line-color:rgba(102,246,255,0.95)]",
-        className
-      )}
+      className={cn("nbtn nbtn--sq shrink-0 focus-visible:outline-none", className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <FrameOctagon
-        className="pointer-events-none absolute inset-0 z-[1]"
-        squareSize={8}
-        strokeWidth={1.2}
-      />
-      <PanelLeftIcon className="relative z-[2] size-4" />
+      <PanelLeftIcon className="size-4" />
       <span className="sr-only">Toggle Sidebar</span>
     </button>
   )
@@ -540,10 +520,6 @@ function SidebarMenuButton({
       className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
       {...props}
     >
-      <FrameUnderline
-        {...navi_under_1}
-        className="frame1 pointer-events-none"
-      />
       {children}
     </Comp>
   )
