@@ -22,6 +22,8 @@ const ThreeDModelViewer = dynamic(
 const API_BASE_URL = "/api"
 const ARTIFACTS_KEY = "NAVI_3D_ARTIFACTS_7E91C4A2_V1"
 const ACTIVE_ARTIFACT_KEY = "NAVI_3D_ACTIVE_39B6D0F5_V1"
+const PENDING_GENERATION_KEY = "NAVI_3D_PENDING_GENERATION_V1"
+const GENERATION_TIMEOUT_MS = 45 * 60 * 1000
 const MAX_IMAGE_BYTES = 32 * 1024 * 1024
 const SUPPORTED_FORMATS: ModelFormat[] = ["glb", "fbx", "obj"]
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"])
@@ -44,8 +46,41 @@ interface Artifact {
 
 type JsonObject = Record<string, unknown>
 
+interface GenerationMetadata {
+  artifactId: string
+  format: ModelFormat
+  prompt: string
+  imageName: string
+}
+
+interface PendingGeneration extends GenerationMetadata {
+  taskId: string
+  startedAt: number
+  result?: JsonObject
+}
+
 const isJsonObject = (value: unknown): value is JsonObject =>
   typeof value === "object" && value !== null && !Array.isArray(value)
+
+const clearPendingGeneration = () => {
+  try {
+    window.localStorage.removeItem(PENDING_GENERATION_KEY)
+  } catch {
+  }
+}
+
+const isPendingGeneration = (value: unknown): value is PendingGeneration => {
+  if (!isJsonObject(value)) return false
+  return (
+    typeof value.taskId === "string" &&
+    typeof value.artifactId === "string" &&
+    isModelFormat(value.format) &&
+    typeof value.prompt === "string" &&
+    typeof value.imageName === "string" &&
+    typeof value.startedAt === "number" &&
+    (value.result === undefined || isJsonObject(value.result))
+  )
+}
 
 const isModelFormat = (value: unknown): value is ModelFormat =>
   typeof value === "string" && SUPPORTED_FORMATS.includes(value as ModelFormat)
@@ -362,31 +397,182 @@ export function ThreeDWorkspace() {
     onImageChosen(files[0])
   }
 
-  const pollTask = async (taskId: string, signal: AbortSignal): Promise<JsonObject> => {
-    const startedAt = Date.now()
-    while (Date.now() - startedAt < 16 * 60 * 1000) {
-      await wait(2200, signal)
-      const response = await fetch(API_BASE_URL + "/create3D", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId }),
-        cache: "no-store",
-        signal,
-      })
-      const task = await readResponse(response)
+  const pollTask = useCallback(async (
+    taskId: string,
+    startedAt: number,
+    signal: AbortSignal
+  ): Promise<JsonObject> => {
+    let failures = 0
+    while (Date.now() - startedAt < GENERATION_TIMEOUT_MS) {
+      const backoff = failures === 0 ? 2200 : Math.min(15000, 1500 * 2 ** Math.min(failures - 1, 4))
+      await wait(backoff, signal)
+      const remainingMs = GENERATION_TIMEOUT_MS - (Date.now() - startedAt)
+      if (remainingMs <= 0) break
+
+      const pollController = new AbortController()
+      const timeout = window.setTimeout(() => pollController.abort(), Math.min(20000, remainingMs))
+      const abortPoll = () => pollController.abort()
+      signal.addEventListener("abort", abortPoll, { once: true })
+
+      let response: Response
+      try {
+        response = await fetch(API_BASE_URL + "/create3D", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ taskId }),
+          cache: "no-store",
+          signal: pollController.signal,
+        })
+      } catch (error) {
+        if (signal.aborted) throw error
+        failures += 1
+        continue
+      } finally {
+        window.clearTimeout(timeout)
+        signal.removeEventListener("abort", abortPoll)
+      }
+
+      if (response.status === 408 || response.status === 425 || response.status === 429 || response.status >= 500) {
+        failures += 1
+        continue
+      }
+
+      if (response.status === 404 || response.status === 410) {
+        clearPendingGeneration()
+      }
+      if (!response.ok) clearPendingGeneration()
+
+      let task: JsonObject
+      try {
+        task = await readResponse(response)
+      } catch (error) {
+        if (!response.ok) throw error
+        failures += 1
+        continue
+      }
+
+      failures = 0
       if (task.status === "processing") continue
       if (task.status === "completed" && isJsonObject(task.response)) return task.response
       if (task.status === "error") {
+        clearPendingGeneration()
         throw new Error(typeof task.message === "string" ? task.message : "3D generation failed.")
       }
       throw new Error("The 3D task returned an unknown state.")
     }
-    throw new Error("3D generation exceeded the 16 minute wait window.")
-  }
+
+    clearPendingGeneration()
+    throw new Error("3D generation exceeded the 45 minute wait window.")
+  }, [])
+
+  const completeGeneration = useCallback((result: JsonObject, metadata: GenerationMetadata) => {
+    if (result.status !== true) {
+      throw new Error(typeof result.error === "string" ? result.error : "3D generation failed.")
+    }
+    if (typeof result.file !== "string" || !/^https?:\/\//i.test(result.file)) {
+      throw new Error("The endpoint did not return a usable model URL.")
+    }
+
+    const resultFormat = isModelFormat(result.filetype) ? result.filetype : metadata.format
+    const baseName = metadata.prompt || metadata.imageName.replace(/\.[^.]+$/, "") || "Generated model"
+    const artifact: Artifact = {
+      id: metadata.artifactId,
+      name: baseName.slice(0, 58),
+      prompt: metadata.prompt || (metadata.imageName ? "Image to 3D: " + metadata.imageName : ""),
+      format: resultFormat,
+      url: result.file,
+      createdAt: Date.now(),
+    }
+    const nextArtifacts = [artifact, ...artifactsRef.current.filter((item) => item.id !== artifact.id)].slice(0, 100)
+    const retainedIds = new Set(nextArtifacts.map((item) => item.id))
+    for (const oldArtifact of artifactsRef.current) {
+      if (!retainedIds.has(oldArtifact.id)) {
+        void deleteCached3DModel(oldArtifact.id).catch(() => undefined)
+      }
+    }
+
+    artifactsRef.current = nextArtifacts
+    setArtifacts(nextArtifacts)
+    setActiveArtifactId(artifact.id)
+    setViewerError(null)
+    setPrompt("")
+    setImageFile(null)
+
+    try {
+      window.localStorage.setItem(ARTIFACTS_KEY, JSON.stringify(nextArtifacts))
+      window.localStorage.setItem(ACTIVE_ARTIFACT_KEY, artifact.id)
+      window.localStorage.removeItem(PENDING_GENERATION_KEY)
+    } catch {
+      setComposerNotice("MODEL READY, BUT THE LOCAL ARTIFACT INDEX COULD NOT BE SAVED.")
+    }
+    window.dispatchEvent(new Event("navi:3d-artifact-ready"))
+  }, [])
+
+  const resumedTaskRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!isHydrated) return
+
+    let pending: PendingGeneration | null = null
+    try {
+      const raw = window.localStorage.getItem(PENDING_GENERATION_KEY)
+      const parsed: unknown = raw ? JSON.parse(raw) : null
+      if (isPendingGeneration(parsed)) pending = parsed
+      else if (raw) window.localStorage.removeItem(PENDING_GENERATION_KEY)
+    } catch {
+      window.localStorage.removeItem(PENDING_GENERATION_KEY)
+    }
+    if (!pending) return
+
+    if (!pending.result && Date.now() - pending.startedAt >= GENERATION_TIMEOUT_MS) {
+      window.localStorage.removeItem(PENDING_GENERATION_KEY)
+      setGenerationError("The saved 3D task exceeded the 45 minute wait window.")
+      return
+    }
+    if (resumedTaskRef.current === pending.taskId) return
+
+    const task = pending
+    const controller = new AbortController()
+    let active = true
+    resumedTaskRef.current = task.taskId
+    abortRef.current = controller
+    setGenerationError(null)
+    setIsPending(true)
+    setPendingSince(task.startedAt)
+
+    void (async () => {
+      try {
+        const result = task.result ?? await pollTask(task.taskId, task.startedAt, controller.signal)
+        if (!active) return
+        try {
+          window.localStorage.setItem(PENDING_GENERATION_KEY, JSON.stringify({ ...task, result }))
+        } catch {
+          setComposerNotice("MODEL RECEIVED, BUT TASK RECOVERY COULD NOT BE SAVED.")
+        }
+        completeGeneration(result, task)
+      } catch (error) {
+        if (active) setGenerationError(errorMessage(error))
+      } finally {
+        if (active) {
+          if (abortRef.current === controller) abortRef.current = null
+          resumedTaskRef.current = null
+          setIsPending(false)
+          setPendingSince(null)
+        }
+      }
+    })()
+
+    return () => {
+      active = false
+      controller.abort()
+      if (resumedTaskRef.current === task.taskId) resumedTaskRef.current = null
+      if (abortRef.current === controller) abortRef.current = null
+    }
+  }, [completeGeneration, isHydrated, pollTask])
 
   const generate = async () => {
     const cleanPrompt = prompt.trim()
-    if (isPending || (!cleanPrompt && !imageFile)) return
+    if (!isHydrated || isPending || (!cleanPrompt && !imageFile)) return
 
     const controller = new AbortController()
     abortRef.current = controller
@@ -413,53 +599,34 @@ export function ThreeDWorkspace() {
       })
       const initial = await readResponse(initialResponse)
       let result = initial
+      const metadata: GenerationMetadata = {
+        artifactId: window.crypto.randomUUID(),
+        format,
+        prompt: cleanPrompt,
+        imageName: imageFile?.name ?? "",
+      }
 
       if (typeof initial.taskId === "string") {
-        result = await pollTask(initial.taskId, controller.signal)
-      }
-
-      if (result.status !== true) {
-        throw new Error(typeof result.error === "string" ? result.error : "3D generation failed.")
-      }
-      if (typeof result.file !== "string" || !/^https?:\/\//i.test(result.file)) {
-        throw new Error("The endpoint did not return a usable model URL.")
-      }
-
-      const resultFormat = isModelFormat(result.filetype) ? result.filetype : format
-      const artifactId = window.crypto.randomUUID()
-      const modelBlob = await download3DModel(result.file, resultFormat, controller.signal)
-      await saveCached3DModel(artifactId, resultFormat, modelBlob)
-      void requestPersistent3DModelStorage()
-
-      const baseName = cleanPrompt || imageFile?.name.replace(/\.[^.]+$/, "") || "Generated model"
-      const artifact: Artifact = {
-        id: artifactId,
-        name: baseName.slice(0, 58),
-        prompt: cleanPrompt || (imageFile ? "Image to 3D: " + imageFile.name : ""),
-        format: resultFormat,
-        url: "",
-        createdAt: Date.now(),
-      }
-      const nextArtifacts = [artifact, ...artifactsRef.current.filter((item) => item.id !== artifact.id)].slice(0, 100)
-      const retainedIds = new Set(nextArtifacts.map((item) => item.id))
-      for (const oldArtifact of artifactsRef.current) {
-        if (!retainedIds.has(oldArtifact.id)) {
-          void deleteCached3DModel(oldArtifact.id).catch(() => undefined)
+        const pending: PendingGeneration = {
+          ...metadata,
+          taskId: initial.taskId,
+          startedAt: Date.now(),
+        }
+        try {
+          window.localStorage.setItem(PENDING_GENERATION_KEY, JSON.stringify(pending))
+        } catch {
+          setComposerNotice("TASK ACCEPTED, BUT RELOAD RECOVERY COULD NOT BE SAVED.")
+        }
+        setPendingSince(pending.startedAt)
+        result = await pollTask(initial.taskId, pending.startedAt, controller.signal)
+        try {
+          window.localStorage.setItem(PENDING_GENERATION_KEY, JSON.stringify({ ...pending, result }))
+        } catch {
+          setComposerNotice("MODEL RECEIVED, BUT TASK RECOVERY COULD NOT BE SAVED.")
         }
       }
-      artifactsRef.current = nextArtifacts
-      setArtifacts(nextArtifacts)
-      setActiveArtifactId(artifact.id)
-      setViewerError(null)
-      setPrompt("")
-      setImageFile(null)
-      try {
-        window.localStorage.setItem(ARTIFACTS_KEY, JSON.stringify(nextArtifacts))
-        window.localStorage.setItem(ACTIVE_ARTIFACT_KEY, artifact.id)
-      } catch {
-        setComposerNotice("MODEL READY, BUT THE LOCAL ARTIFACT INDEX COULD NOT BE SAVED.")
-      }
-      window.dispatchEvent(new Event("navi:3d-artifact-ready"))
+
+      completeGeneration(result, metadata)
     } catch (error) {
       setGenerationError(errorMessage(error))
     } finally {
@@ -504,7 +671,7 @@ export function ThreeDWorkspace() {
   const showViewerError = Boolean(activeArtifact && viewerError)
   const showEmpty = !isPending && !showGenerationError && !showViewerError && !activeArtifact
   const showModelLoading = Boolean(activeArtifact && loadingArtifactId === activeArtifact.id)
-  const canSend = !isPending && (prompt.trim().length > 0 || Boolean(imageFile))
+  const canSend = isHydrated && !isPending && (prompt.trim().length > 0 || Boolean(imageFile))
 
   return (
     <div
