@@ -4,6 +4,7 @@ import dynamic from "next/dynamic"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { Download, LoaderCircle, Paperclip, PanelRightClose, PanelRightOpen, RotateCcw, Send, Trash2, X } from "lucide-react"
 import { Textarea } from "@/components/ui/textarea"
+import { readClipboardImages } from "@/lib/clipboard-images"
 import {
   deleteCached3DModel,
   download3DModel,
@@ -395,6 +396,25 @@ export function ThreeDWorkspace() {
       return
     }
     onImageChosen(files[0])
+  }
+
+  const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = readClipboardImages(event.clipboardData)
+    if (!pasted.hasImage) return
+    event.preventDefault()
+    if (pasted.error === "size") {
+      setComposerNotice("IMAGE EXCEEDS THE 32 MB LIMIT.")
+      return
+    }
+    if (pasted.error === "invalid") {
+      setComposerNotice("PASTED IMAGE COULD NOT BE READ.")
+      return
+    }
+    if (pasted.files.length > 1) {
+      setComposerNotice("ONE IMAGE MAXIMUM.")
+      return
+    }
+    onImageChosen(pasted.files[0])
   }
 
   const pollTask = useCallback(async (
@@ -840,6 +860,7 @@ export function ThreeDWorkspace() {
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
               onKeyDown={onTextKeyDown}
+              onPaste={onPaste}
               disabled={isPending}
               placeholder="Type your message here..."
               aria-label="3D generation prompt"

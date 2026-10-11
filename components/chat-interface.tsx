@@ -16,6 +16,7 @@ import { NaviTxt } from "@/components/ui/navi_txt"
 import { SlowDecipherText } from "@/components/ui/decipher"
 import { AssistantMarkdown } from "@/components/ui/assistant-markdown"
 import { getCachedImage, setCachedImage } from "@/lib/image-cache"
+import { readClipboardImages } from "@/lib/clipboard-images"
 import {
   navi_under_1,
   navi_panel_1,
@@ -2335,6 +2336,21 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
     addDropped(Array.from(event.dataTransfer.files ?? []))
   }
 
+  const onPaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pasted = readClipboardImages(event.clipboardData)
+    if (!pasted.hasImage) return
+    event.preventDefault()
+    if (pasted.error === "size") {
+      showToast(`Max file size permitted: ${MAX_ATTACH_MB}MB`)
+      return
+    }
+    if (pasted.error === "invalid") {
+      showToast("Could not read the pasted image")
+      return
+    }
+    addDropped(pasted.files)
+  }
+
   const clearAttach = () => {
     setAttachments([])
     setIsEditPromptGlow(false)
@@ -2836,6 +2852,7 @@ export function ChatInterface({ chatId, chatMode = "chat" }: ChatInterfaceProps)
                 frame="nero"
                 onChange={onInputChange}
                 onKeyDown={onKey}
+                onPaste={onPaste}
                 disabled={isRequestInFlight}
                 placeholder={
                   chatMode === "image"
