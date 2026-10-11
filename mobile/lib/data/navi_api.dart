@@ -134,6 +134,36 @@ class NaviApi {
     return imageUrl.replaceAll(RegExp(r'[),.;]+$'), '');
   }
 
+  Future<Uint8List> downloadImage(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || (uri.scheme != 'https' && uri.scheme != 'http')) {
+      throw const NaviApiException('The returned image link is invalid.');
+    }
+    try {
+      final response = await _client
+          .get(uri)
+          .timeout(const Duration(minutes: 2));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw NaviApiException(
+          'Image download failed (${response.statusCode}).',
+        );
+      }
+      if (response.bodyBytes.length > 32 * 1024 * 1024) {
+        throw const NaviApiException('The image exceeds the 32 MB limit.');
+      }
+      return response.bodyBytes;
+    } on TimeoutException {
+      throw const NaviApiException(
+        'Image download timed out.',
+        retryable: true,
+      );
+    } on NaviApiException {
+      rethrow;
+    } catch (_) {
+      throw const NaviApiException('The generated image could not be loaded.');
+    }
+  }
+
   Future<Map<String, dynamic>> _poll(String endpoint, String taskId) async {
     final stopwatch = Stopwatch()..start();
     var failedPolls = 0;
