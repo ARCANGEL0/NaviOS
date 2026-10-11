@@ -215,6 +215,49 @@ class NaviApi {
     throw const NaviApiException('The 3D task returned no model.');
   }
 
+  Future<Uint8List> downloadFile(String url, {int? maxBytes}) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null || (uri.scheme != 'https' && uri.scheme != 'http')) {
+      throw const NaviApiException('The returned file link is invalid.');
+    }
+    try {
+      final request = http.Request('GET', uri);
+      final response = await _client
+          .send(request)
+          .timeout(const Duration(minutes: 2));
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        throw NaviApiException(
+          'File download failed (${response.statusCode}).',
+        );
+      }
+      if (maxBytes != null &&
+          response.contentLength != null &&
+          response.contentLength! > maxBytes) {
+        throw const NaviApiException('The file exceeds the local size limit.');
+      }
+      final builder = BytesBuilder(copy: false);
+      var received = 0;
+      await for (final chunk in response.stream.timeout(
+        const Duration(minutes: 2),
+      )) {
+        received += chunk.length;
+        if (maxBytes != null && received > maxBytes) {
+          throw const NaviApiException(
+            'The file exceeds the local size limit.',
+          );
+        }
+        builder.add(chunk);
+      }
+      return builder.takeBytes();
+    } on TimeoutException {
+      throw const NaviApiException('File download timed out.', retryable: true);
+    } on NaviApiException {
+      rethrow;
+    } catch (_) {
+      throw const NaviApiException('The generated file could not be loaded.');
+    }
+  }
+
   Future<Map<String, dynamic>> _poll(
     String endpoint,
     String taskId, {
