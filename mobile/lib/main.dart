@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'screens/navi_web_home.dart';
+import 'screens/navi_home.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +17,7 @@ class NaviMobileApp extends StatelessWidget {
     return MaterialApp(
       title: 'NAVI',
       debugShowCheckedModeBanner: false,
-      home: const NaviWebHome(),
+      home: const NaviHome(),
     );
   }
 }
