@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -17,6 +18,10 @@ class NaviApi {
   NaviApi({http.Client? client}) : _client = client ?? http.Client();
 
   static final _origin = Uri.parse('https://api.arcangelo.net');
+  static final _imageUrlPattern = RegExp(
+    r'https?://[^\s<>"\x27]+?\.(?:png|jpe?g|gif|webp)(?:\?[^\s<>"\x27]*)?',
+    caseSensitive: false,
+  );
   final http.Client _client;
 
   Future<Map<String, dynamic>> _post(
@@ -77,6 +82,11 @@ class NaviApi {
     return '';
   }
 
+  String _taskId(Map<String, dynamic> data) {
+    final id = data['taskId'] ?? data['task_id'];
+    return id is String ? id : '';
+  }
+
   Future<String> sendChat({
     required List<Map<String, String>> conversation,
     required String sessionId,
@@ -90,8 +100,8 @@ class NaviApi {
       'stream': false,
       'generate_files': false,
     });
-    final taskId = result['taskId'] ?? result['task_id'];
-    if (taskId is String && taskId.isNotEmpty) {
+    final taskId = _taskId(result);
+    if (taskId.isNotEmpty) {
       result = await _poll(endpoint, taskId);
     }
     final answer = _responseText(result);
@@ -99,6 +109,29 @@ class NaviApi {
       throw const NaviApiException('NAVI returned an empty response.');
     }
     return answer;
+  }
+
+  Future<String> generateImage({
+    required String prompt,
+    Uint8List? editImage,
+  }) async {
+    final endpoint = editImage == null ? '/imagine' : '/multiEdit';
+    final body = editImage == null
+        ? <String, Object?>{'prompt': prompt}
+        : <String, Object?>{
+            'prompt': prompt,
+            'image': [base64Encode(editImage)],
+          };
+    var result = await _post(endpoint, body);
+    final taskId = _taskId(result);
+    if (taskId.isNotEmpty) result = await _poll(endpoint, taskId);
+    final imageUrl = _imageUrlPattern
+        .firstMatch(_responseText(result))
+        ?.group(0);
+    if (imageUrl == null) {
+      throw const NaviApiException('No image link was returned.');
+    }
+    return imageUrl.replaceAll(RegExp(r'[),.;]+$'), '');
   }
 
   Future<Map<String, dynamic>> _poll(String endpoint, String taskId) async {
