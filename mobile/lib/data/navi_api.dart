@@ -164,10 +164,67 @@ class NaviApi {
     }
   }
 
-  Future<Map<String, dynamic>> _poll(String endpoint, String taskId) async {
+  Future<Map<String, dynamic>> generate3D({
+    required String prompt,
+    required String format,
+    Uint8List? image,
+    String imageMime = 'image/jpeg',
+    void Function()? onWaiting,
+  }) async {
+    if (!const {'glb', 'fbx', 'obj'}.contains(format.toLowerCase())) {
+      throw const NaviApiException('That 3D filetype is not supported.');
+    }
+    if (image == null && prompt.trim().isEmpty) {
+      throw const NaviApiException('Describe a model or attach an image.');
+    }
+    final body = <String, Object?>{
+      'filetype': format.toLowerCase(),
+      'async': true,
+    };
+    if (image == null) {
+      body['text_input'] = prompt.trim();
+    } else {
+      body['image_input'] = 'data:$imageMime;base64,${base64Encode(image)}';
+    }
+    final initial = await _post(
+      '/create3D',
+      body,
+      timeout: const Duration(minutes: 2),
+    );
+    final taskId = _taskId(initial);
+    if (taskId.isEmpty) return _unwrap3D(initial);
+    return _unwrap3D(
+      await _poll(
+        '/create3D',
+        taskId,
+        timeout: const Duration(minutes: 45),
+        onWaiting: onWaiting,
+      ),
+    );
+  }
+
+  Map<String, dynamic> _unwrap3D(Map<String, dynamic> data) {
+    final rawStatus = data['status'];
+    final status = rawStatus is String ? rawStatus.toLowerCase() : '';
+    if (status == 'error' || status == 'failed') {
+      throw const NaviApiException('3D generation failed. Try again.');
+    }
+    final result = data['response'];
+    if (result is Map) return Map<String, dynamic>.from(result);
+    if (data['file'] is String) return data;
+    throw const NaviApiException('The 3D task returned no model.');
+  }
+
+  Future<Map<String, dynamic>> _poll(
+    String endpoint,
+    String taskId, {
+    Duration timeout = const Duration(minutes: 45),
+    void Function()? onWaiting,
+  }) async {
     final stopwatch = Stopwatch()..start();
     var failedPolls = 0;
-    while (stopwatch.elapsed < const Duration(minutes: 45)) {
+    while (stopwatch.elapsed < timeout) {
+      onWaiting?.call();
       final exponent = (failedPolls - 1).clamp(0, 4).toInt();
       final waitMs = failedPolls == 0
           ? 2200
@@ -190,7 +247,9 @@ class NaviApi {
         if (status == 'error' || status == 'failed') {
           throw const NaviApiException('The chat task failed. Try again.');
         }
-        if (result['response'] != null || result['output'] != null) {
+        if (result['response'] != null ||
+            result['output'] != null ||
+            result['file'] != null) {
           return result;
         }
         throw const NaviApiException('NAVI returned an unknown task state.');
@@ -199,7 +258,9 @@ class NaviApi {
         failedPolls++;
       }
     }
-    throw const NaviApiException('The chat request exceeded its wait limit.');
+    throw const NaviApiException(
+      'Generation exceeded the 45 minute wait limit.',
+    );
   }
 
   void close() => _client.close();
