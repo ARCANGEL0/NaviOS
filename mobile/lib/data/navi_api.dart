@@ -1,0 +1,143 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+
+class NaviApiException implements Exception {
+  const NaviApiException(this.message, {this.retryable = false});
+
+  final String message;
+  final bool retryable;
+
+  @override
+  String toString() => message;
+}
+
+class NaviApi {
+  NaviApi({http.Client? client}) : _client = client ?? http.Client();
+
+  static final _origin = Uri.parse('https://api.arcangelo.net');
+  final http.Client _client;
+
+  Future<Map<String, dynamic>> _post(
+    String endpoint,
+    Map<String, Object?> body, {
+    Duration timeout = const Duration(seconds: 35),
+  }) async {
+    try {
+      final response = await _client
+          .post(
+            _origin.resolve(endpoint),
+            headers: const {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(timeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final retryable =
+            response.statusCode == 408 ||
+            response.statusCode == 425 ||
+            response.statusCode == 429 ||
+            response.statusCode >= 500;
+        throw NaviApiException(
+          'API request failed (${response.statusCode}).',
+          retryable: retryable,
+        );
+      }
+      final decoded = jsonDecode(utf8.decode(response.bodyBytes));
+      if (decoded is Map<String, dynamic>) return decoded;
+      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      if (decoded is String) return {'response': decoded};
+      throw const NaviApiException('The API returned an unreadable response.');
+    } on TimeoutException {
+      throw const NaviApiException(
+        'The API request timed out.',
+        retryable: true,
+      );
+    } on FormatException {
+      throw const NaviApiException('The API returned an unreadable response.');
+    } on NaviApiException {
+      rethrow;
+    } catch (_) {
+      throw const NaviApiException(
+        'Could not connect to the NAVI API.',
+        retryable: true,
+      );
+    }
+  }
+
+  String _responseText(Map<String, dynamic> data) {
+    for (final key in ['response', 'output', 'message']) {
+      final value = data[key];
+      if (value is String && value.trim().isNotEmpty) return value.trim();
+    }
+    final result = data['result'];
+    if (result is Map && result['output'] is String) {
+      return (result['output'] as String).trim();
+    }
+    return '';
+  }
+
+  Future<String> sendChat({
+    required List<Map<String, String>> conversation,
+    required String sessionId,
+    required bool dark,
+  }) async {
+    final endpoint = dark ? '/navi_dark' : '/navi';
+    var result = await _post(endpoint, {
+      'type': 'text',
+      'sessionId': sessionId,
+      'conversation': conversation,
+      'stream': false,
+      'generate_files': false,
+    });
+    final taskId = result['taskId'] ?? result['task_id'];
+    if (taskId is String && taskId.isNotEmpty) {
+      result = await _poll(endpoint, taskId);
+    }
+    final answer = _responseText(result);
+    if (answer.isEmpty) {
+      throw const NaviApiException('NAVI returned an empty response.');
+    }
+    return answer;
+  }
+
+  Future<Map<String, dynamic>> _poll(String endpoint, String taskId) async {
+    final stopwatch = Stopwatch()..start();
+    var failedPolls = 0;
+    while (stopwatch.elapsed < const Duration(minutes: 45)) {
+      final exponent = (failedPolls - 1).clamp(0, 4).toInt();
+      final waitMs = failedPolls == 0
+          ? 2200
+          : (1500 * (1 << exponent)).clamp(1500, 15000).toInt();
+      await Future<void>.delayed(Duration(milliseconds: waitMs));
+      try {
+        final result = await _post(endpoint, {
+          'taskId': taskId,
+        }, timeout: const Duration(seconds: 25));
+        failedPolls = 0;
+        final status = (result['status'] as String? ?? '').toLowerCase();
+        if (const {
+          'processing',
+          'pending',
+          'queued',
+          'running',
+        }.contains(status)) {
+          continue;
+        }
+        if (status == 'error' || status == 'failed') {
+          throw const NaviApiException('The chat task failed. Try again.');
+        }
+        if (result['response'] != null || result['output'] != null) {
+          return result;
+        }
+        throw const NaviApiException('NAVI returned an unknown task state.');
+      } on NaviApiException catch (error) {
+        if (!error.retryable) rethrow;
+        failedPolls++;
+      }
+    }
+    throw const NaviApiException('The chat request exceeded its wait limit.');
+  }
+
+  void close() => _client.close();
+}
