@@ -57,7 +57,7 @@ jobs:
         id: release
         run: |
           VERSION_NAME="$(ruby -ryaml -e 'print YAML.load_file("mobile/pubspec.yaml").fetch("version").split("+", 2).first')"
-          RELEASE_TAG="v${VERSION_NAME}-build.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          RELEASE_TAG="v${VERSION_NAME}"
           APK_NAME="Navi-${RELEASE_TAG}.apk"
           cp mobile/build/app/outputs/flutter-apk/app-release.apk "$APK_NAME"
           echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
